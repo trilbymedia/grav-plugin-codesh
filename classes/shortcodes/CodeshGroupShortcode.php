@@ -21,10 +21,15 @@ class CodeshGroupShortcode extends Shortcode
         // The inner [codesh] shortcodes have already been processed
         // We need to find all .codesh-block elements and convert them to tabs
 
-        // Use regex to extract codesh blocks and their data
-        $pattern = '/<div class="codesh-block([^"]*)"[^>]*data-language="([^"]*)"[^>]*>(.*?)<\/div>(?=\s*(?:<div class="codesh-block|$))/s';
+        // Use DOMDocument for proper HTML parsing
+        $dom = new \DOMDocument();
+        // Suppress warnings for HTML5 elements and load with proper encoding
+        @$dom->loadHTML('<?xml encoding="UTF-8"><div id="codesh-wrapper">' . $content . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
-        if (!preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
+        $xpath = new \DOMXPath($dom);
+        $blocks = $xpath->query("//div[contains(@class, 'codesh-block')]");
+
+        if ($blocks->length === 0) {
             // No codesh blocks found, return content as-is
             return $content;
         }
@@ -33,23 +38,28 @@ class CodeshGroupShortcode extends Shortcode
         $panels = [];
         $groupId = 'cg-' . substr(md5(uniqid()), 0, 8);
 
-        foreach ($matches as $index => $match) {
-            $classes = $match[1];
-            $lang = $match[2];
-            $blockHtml = $match[0];
+        foreach ($blocks as $index => $block) {
+            $lang = $block->getAttribute('data-language') ?: 'txt';
 
             // Extract title from the block if present
-            $title = $lang; // Default to language
-            if (preg_match('/<span class="codesh-title">([^<]+)<\/span>/', $blockHtml, $titleMatch)) {
-                $title = $titleMatch[1];
-            } elseif (preg_match('/<span class="codesh-lang">([^<]+)<\/span>/', $blockHtml, $langMatch)) {
-                $title = $langMatch[1];
+            $title = strtoupper($lang); // Default to language
+            $titleEl = $xpath->query(".//span[contains(@class, 'codesh-title')]", $block)->item(0);
+            $langEl = $xpath->query(".//span[contains(@class, 'codesh-lang')]", $block)->item(0);
+
+            if ($titleEl) {
+                $title = $titleEl->textContent;
+            } elseif ($langEl && !empty(trim($langEl->textContent))) {
+                $title = $langEl->textContent;
             }
 
-            // Extract just the code part (remove the existing header)
-            $codeHtml = $blockHtml;
-            // Remove the header div if present
-            $codeHtml = preg_replace('/<div class="codesh-header">.*?<\/div>/s', '', $codeHtml);
+            // Remove the header from the block
+            $header = $xpath->query(".//div[contains(@class, 'codesh-header')]", $block)->item(0);
+            if ($header) {
+                $header->parentNode->removeChild($header);
+            }
+
+            // Get the modified block HTML
+            $blockHtml = $dom->saveHTML($block);
 
             $isActive = $index === 0;
             $tabId = $groupId . '-' . $index;
@@ -63,7 +73,7 @@ class CodeshGroupShortcode extends Shortcode
 
             $panels[] = [
                 'id' => $tabId,
-                'html' => $codeHtml,
+                'html' => $blockHtml,
                 'active' => $isActive,
             ];
         }

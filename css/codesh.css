@@ -167,23 +167,20 @@
    Switch between light/dark themes via CSS variables
    Only applies to blocks with codesh-dual-theme class
    =================================== */
+
+/* Pre element only - switch background for dark mode */
 .dark .codesh-dual-theme .shiki,
-.dark .codesh-dual-theme .shiki span {
-    color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
+.dark .codesh-dual-theme .phiki {
+    background-color: var(--shiki-dark-bg, var(--phiki-dark-background-color)) !important;
 }
 
-/* Also support phiki-prefixed variables if used */
-.dark .codesh-dual-theme .phiki,
+/* Spans - only switch text properties, NOT background (preserves line highlighting) */
+.dark .codesh-dual-theme .shiki span,
 .dark .codesh-dual-theme .phiki span {
-    color: var(--phiki-dark-color) !important;
-    background-color: var(--phiki-dark-background-color) !important;
-    font-style: var(--phiki-dark-font-style) !important;
-    font-weight: var(--phiki-dark-font-weight) !important;
-    text-decoration: var(--phiki-dark-text-decoration) !important;
+    color: var(--shiki-dark, var(--phiki-dark-color)) !important;
+    font-style: var(--shiki-dark-font-style, var(--phiki-dark-font-style)) !important;
+    font-weight: var(--shiki-dark-font-weight, var(--phiki-dark-font-weight)) !important;
+    text-decoration: var(--shiki-dark-text-decoration, var(--phiki-dark-text-decoration)) !important;
 }
 
 .codesh-block pre {
