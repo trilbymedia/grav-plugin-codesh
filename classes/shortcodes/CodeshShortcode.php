@@ -11,6 +11,29 @@ use Thunder\Shortcode\Shortcode\ShortcodeInterface;
 
 class CodeshShortcode extends Shortcode
 {
+    protected ?Phiki $phiki = null;
+
+    /**
+     * Get Phiki instance with custom themes registered
+     */
+    protected function getPhiki(): Phiki
+    {
+        if ($this->phiki === null) {
+            $this->phiki = new Phiki();
+
+            // Register custom themes from plugin's themes directory
+            $themesDir = dirname(__DIR__, 2) . '/themes';
+            if (is_dir($themesDir)) {
+                foreach (glob($themesDir . '/*.json') as $themeFile) {
+                    $themeName = basename($themeFile, '.json');
+                    $this->phiki->theme($themeName, $themeFile);
+                }
+            }
+        }
+
+        return $this->phiki;
+    }
+
     public function init(): void
     {
         $handler = function (ShortcodeInterface $sc) {
@@ -67,8 +90,9 @@ class CodeshShortcode extends Shortcode
         // Detect theme mode from Helios theme config
         $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
-        $themeDark = $config['theme_dark'] ?? 'github-dark';
-        $themeLight = $config['theme_light'] ?? 'github-light';
+        // Use custom helios themes by default (with diff backgrounds)
+        $themeDark = $config['theme_dark'] ?? 'helios-dark';
+        $themeLight = $config['theme_light'] ?? 'helios-light';
 
         // Get theme - explicit theme parameter overrides mode-based themes
         $explicitTheme = $options['theme'] ?? null;
@@ -106,9 +130,8 @@ class CodeshShortcode extends Shortcode
         }
 
         try {
-            // Create Phiki instance and highlight
-            // Phiki accepts string grammar names and handles aliases internally
-            $phiki = new Phiki();
+            // Get Phiki instance with custom themes registered
+            $phiki = $this->getPhiki();
             $output = $phiki->codeToHtml($content, strtolower($lang), $theme);
 
             // Add 'no-highlight' class to prevent Prism.js from reprocessing

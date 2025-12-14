@@ -102,11 +102,6 @@
     border-color: rgba(34, 197, 94, 0.8);
 }
 
-/* Dark mode diff colors - use Phiki's dark CSS variables */
-.dark .codesh-block[data-language="diff"] .token {
-    color: var(--phiki-dark-color) !important;
-    background-color: var(--phiki-dark-background-color) !important;
-}
 
 /* ===================================
    SHARED STYLES
@@ -182,6 +177,14 @@
     font-style: var(--shiki-dark-font-style, var(--phiki-dark-font-style)) !important;
     font-weight: var(--shiki-dark-font-weight, var(--phiki-dark-font-weight)) !important;
     text-decoration: var(--shiki-dark-text-decoration, var(--phiki-dark-text-decoration)) !important;
+}
+
+/* Token backgrounds for diff - only apply when variable is set */
+.dark .codesh-dual-theme .shiki span[style*="--shiki-dark-bg"],
+.dark .codesh-dual-theme .phiki span[style*="--phiki-dark-background-color"],
+.dark .codesh-group .shiki span[style*="--shiki-dark-bg"],
+.dark .codesh-group .phiki span[style*="--phiki-dark-background-color"] {
+    background-color: var(--shiki-dark-bg, var(--phiki-dark-background-color)) !important;
 }
 
 .codesh-block pre {

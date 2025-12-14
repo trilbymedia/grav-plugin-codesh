@@ -10,6 +10,8 @@ use RocketTheme\Toolbox\Event\Event;
 
 class CodeshPlugin extends Plugin
 {
+    protected ?Phiki $phiki = null;
+
     /**
      * @return array
      */
@@ -67,6 +69,27 @@ class CodeshPlugin extends Plugin
     }
 
     /**
+     * Get Phiki instance with custom themes registered
+     */
+    protected function getPhiki(): Phiki
+    {
+        if ($this->phiki === null) {
+            $this->phiki = new Phiki();
+
+            // Register custom themes from plugin's themes directory
+            $themesDir = __DIR__ . '/themes';
+            if (is_dir($themesDir)) {
+                foreach (glob($themesDir . '/*.json') as $themeFile) {
+                    $themeName = basename($themeFile, '.json');
+                    $this->phiki->theme($themeName, $themeFile);
+                }
+            }
+        }
+
+        return $this->phiki;
+    }
+
+    /**
      * Process markdown code blocks after page content is processed
      */
     public function onPageContentProcessed(Event $e): void
@@ -101,6 +124,20 @@ class CodeshPlugin extends Plugin
             $content
         );
 
+        // Also process code blocks WITHOUT a language class: <pre><code>...</code></pre>
+        $content = preg_replace_callback(
+            '/<pre><code>(.*?)<\/code><\/pre>/s',
+            function ($matches) use ($config) {
+                $code = $matches[1];
+
+                // Decode HTML entities back to original code
+                $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return $this->highlightCode($code, 'txt', $config);
+            },
+            $content
+        );
+
         $page->setRawContent($content);
     }
 
@@ -112,8 +149,9 @@ class CodeshPlugin extends Plugin
         // Detect theme mode from Helios theme config
         $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
-        $themeDark = $config['theme_dark'] ?? 'github-dark';
-        $themeLight = $config['theme_light'] ?? 'github-light';
+        // Use custom helios themes by default (with diff backgrounds)
+        $themeDark = $config['theme_dark'] ?? 'helios-dark';
+        $themeLight = $config['theme_light'] ?? 'helios-light';
 
         // Determine theme(s) to use
         if ($themeConfig === 'system') {
@@ -128,7 +166,7 @@ class CodeshPlugin extends Plugin
         }
 
         try {
-            $phiki = new Phiki();
+            $phiki = $this->getPhiki();
             $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
 
             // Add 'no-highlight' class to prevent Prism.js from reprocessing
