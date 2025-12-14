@@ -1,0 +1,16 @@
+{
+    "name": "getgrav/codesh",
+    "type": "grav-plugin",
+    "description": "Server-side syntax highlighting using Phiki",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "phiki/phiki": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Grav\\Plugin\\": "",
+            "Grav\\Plugin\\Codesh\\": "classes/"
+        }
+    }
+}

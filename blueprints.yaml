@@ -1,0 +1,122 @@
+name: Code Syntax Highlighter
+slug: codesh
+type: plugin
+version: 1.0.0
+description: Server-side syntax highlighting using Phiki with line numbers, line highlighting, and focus support
+icon: code
+author:
+  name: RocketTheme
+  email: support@rockettheme.com
+  url: https://rockettheme.com
+homepage: https://github.com/getgrav/grav-plugin-codesh
+keywords: grav, plugin, code, syntax, highlighting, phiki
+bugs: https://github.com/getgrav/grav-plugin-codesh/issues
+docs: https://github.com/getgrav/grav-plugin-codesh/blob/main/README.md
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=1.7.0' }
+  - { name: shortcode-core, version: '>=5.0.0' }
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin Status
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    active:
+      type: toggle
+      label: Active
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    theme:
+      type: select
+      label: Default Theme
+      default: github-dark
+      options:
+        andromeeda: Andromeeda
+        aurora-x: Aurora X
+        ayu-dark: Ayu Dark
+        catppuccin-frappe: Catppuccin Frappé
+        catppuccin-latte: Catppuccin Latte
+        catppuccin-macchiato: Catppuccin Macchiato
+        catppuccin-mocha: Catppuccin Mocha
+        dark-plus: Dark+
+        dracula: Dracula
+        dracula-soft: Dracula Soft
+        everforest-dark: Everforest Dark
+        everforest-light: Everforest Light
+        github-dark: GitHub Dark
+        github-dark-default: GitHub Dark Default
+        github-dark-dimmed: GitHub Dark Dimmed
+        github-dark-high-contrast: GitHub Dark High Contrast
+        github-light: GitHub Light
+        github-light-default: GitHub Light Default
+        github-light-high-contrast: GitHub Light High Contrast
+        gruvbox-dark-hard: Gruvbox Dark Hard
+        gruvbox-dark-medium: Gruvbox Dark Medium
+        gruvbox-dark-soft: Gruvbox Dark Soft
+        gruvbox-light-hard: Gruvbox Light Hard
+        gruvbox-light-medium: Gruvbox Light Medium
+        gruvbox-light-soft: Gruvbox Light Soft
+        houston: Houston
+        kanagawa-dragon: Kanagawa Dragon
+        kanagawa-lotus: Kanagawa Lotus
+        kanagawa-wave: Kanagawa Wave
+        laserwave: Laserwave
+        light-plus: Light+
+        material-theme: Material Theme
+        material-theme-darker: Material Theme Darker
+        material-theme-lighter: Material Theme Lighter
+        material-theme-ocean: Material Theme Ocean
+        material-theme-palenight: Material Theme Palenight
+        min-dark: Min Dark
+        min-light: Min Light
+        monokai: Monokai
+        night-owl: Night Owl
+        nord: Nord
+        one-dark-pro: One Dark Pro
+        one-light: One Light
+        plastic: Plastic
+        poimandres: Poimandres
+        red: Red
+        rose-pine: Rosé Pine
+        rose-pine-dawn: Rosé Pine Dawn
+        rose-pine-moon: Rosé Pine Moon
+        slack-dark: Slack Dark
+        slack-ochin: Slack Ochin
+        snazzy-light: Snazzy Light
+        solarized-dark: Solarized Dark
+        solarized-light: Solarized Light
+        synthwave-84: Synthwave '84
+        tokyo-night: Tokyo Night
+        vesper: Vesper
+        vitesse-black: Vitesse Black
+        vitesse-dark: Vitesse Dark
+        vitesse-light: Vitesse Light
+
+    show_line_numbers:
+      type: toggle
+      label: Show Line Numbers (Default)
+      help: Default setting for showing line numbers. Can be overridden per code block.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool

@@ -1,0 +1,219 @@
+<?php
+
+namespace Grav\Plugin\Shortcodes;
+
+use Phiki\Phiki;
+use Phiki\Transformers\Decorations\LineDecoration;
+use Phiki\Transformers\Decorations\PreDecoration;
+use Thunder\Shortcode\EventHandler\FilterRawEventHandler;
+use Thunder\Shortcode\Events;
+use Thunder\Shortcode\Shortcode\ShortcodeInterface;
+
+class CodeshShortcode extends Shortcode
+{
+    public function init(): void
+    {
+        $handler = function (ShortcodeInterface $sc) {
+            return $this->process($sc);
+        };
+
+        // Register with RAW handlers so we process BEFORE markdown
+        $this->shortcode->getRawHandlers()->add('codesh', $handler);
+
+        // Also register with regular handlers as fallback
+        $this->shortcode->getHandlers()->add('codesh', $handler);
+
+        // Prevent nested shortcode processing inside our content
+        $this->shortcode->getEvents()->addListener(
+            Events::FILTER_SHORTCODES,
+            new FilterRawEventHandler(['codesh'])
+        );
+    }
+
+    /**
+     * Process the shortcode
+     */
+    protected function process(ShortcodeInterface $sc): string
+    {
+        $config = $this->config->get('plugins.codesh');
+
+        // Get parameters - support both BBCode style [codesh=php] and attribute style [codesh lang="php"]
+        $lang = $sc->getParameter('lang', $sc->getBbCode() ?? 'txt');
+        $theme = $sc->getParameter('theme', $config['theme'] ?? 'github-dark');
+        $lineNumbers = $this->toBool($sc->getParameter('line-numbers', $sc->getParameter('linenumbers', $config['show_line_numbers'] ?? false)));
+        $startLine = (int) $sc->getParameter('start', $sc->getParameter('start-line', 1));
+        $highlight = $sc->getParameter('highlight', $sc->getParameter('hl', ''));
+        $focus = $sc->getParameter('focus', '');
+        $class = $sc->getParameter('class', '');
+        $showLang = $this->toBool($sc->getParameter('show-lang', $sc->getParameter('showlang', true)));
+        $title = $sc->getParameter('title', '');
+
+        // Get code content - handle markdown fenced code blocks
+        $content = $sc->getContent() ?? '';
+        $content = $this->extractCodeFromMarkdown($content, $lang);
+
+        // Clean up the content
+        $content = $this->cleanContent($content);
+
+        if (empty(trim($content))) {
+            return '';
+        }
+
+        try {
+            // Create Phiki instance and highlight
+            // Phiki accepts string grammar names and handles aliases internally
+            $phiki = new Phiki();
+            $output = $phiki->codeToHtml($content, strtolower($lang), $theme);
+
+            // Add 'no-highlight' class to prevent Prism.js from reprocessing
+            $output = $output->decoration(
+                PreDecoration::make()->class('no-highlight')
+            );
+
+            // Add line numbers if enabled
+            if ($lineNumbers) {
+                $output = $output->withGutter();
+                if ($startLine !== 1) {
+                    $output = $output->startingLine($startLine);
+                }
+            }
+
+            // Add line decorations for highlighting
+            if (!empty($highlight)) {
+                $highlightLines = $this->parseLineSpec($highlight);
+                foreach ($highlightLines as $line) {
+                    // Lines are zero-indexed in Phiki
+                    $output = $output->decoration(
+                        LineDecoration::forLine($line - 1)->class('highlight')
+                    );
+                }
+            }
+
+            // Add line decorations for focus
+            if (!empty($focus)) {
+                $focusLines = $this->parseLineSpec($focus);
+                foreach ($focusLines as $line) {
+                    $output = $output->decoration(
+                        LineDecoration::forLine($line - 1)->class('focus')
+                    );
+                }
+            }
+
+            $html = $output->toString();
+
+            // Wrap in container with optional class
+            $classes = ['codesh-block'];
+            if (!empty($class)) {
+                $classes[] = htmlspecialchars($class);
+            }
+            if (!empty($highlight)) {
+                $classes[] = 'has-highlights';
+            }
+            if (!empty($focus)) {
+                $classes[] = 'has-focus';
+            }
+
+            // Build data attributes
+            $dataAttrs = 'data-language="' . htmlspecialchars($lang) . '"';
+            if (!$showLang) {
+                $dataAttrs .= ' data-hide-lang="true"';
+            }
+            if (!empty($title)) {
+                $dataAttrs .= ' data-title="' . htmlspecialchars($title) . '"';
+            }
+
+            return '<div class="' . implode(' ', $classes) . '" ' . $dataAttrs . '>' . $html . '</div>';
+
+        } catch (\Exception $e) {
+            // Fallback to plain text on error
+            return '<div class="codesh-block codesh-error" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($content) . '</code></pre></div>';
+        }
+    }
+
+    /**
+     * Extract code from markdown fenced code blocks
+     */
+    protected function extractCodeFromMarkdown(string $content, string &$lang): string
+    {
+        // Check for markdown fenced code block (``` or ~~~)
+        if (preg_match('/^```([^\s\n]*)\s*\n(.*?)\n```$/s', trim($content), $matches)) {
+            if (!empty($matches[1])) {
+                $lang = $matches[1];
+            }
+            return $matches[2];
+        }
+
+        if (preg_match('/^~~~([^\s\n]*)\s*\n(.*?)\n~~~$/s', trim($content), $matches)) {
+            if (!empty($matches[1])) {
+                $lang = $matches[1];
+            }
+            return $matches[2];
+        }
+
+        return $content;
+    }
+
+    /**
+     * Clean up content - remove common indentation, trim, etc.
+     */
+    protected function cleanContent(string $content): string
+    {
+        // Decode any HTML entities that may have been encoded
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Remove leading/trailing blank lines
+        $content = trim($content, "\n\r");
+
+        return $content;
+    }
+
+    /**
+     * Parse line specification like "1,3-5,7" into array of line numbers
+     */
+    protected function parseLineSpec(string $spec): array
+    {
+        $lines = [];
+        $parts = explode(',', $spec);
+
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if (empty($part)) {
+                continue;
+            }
+
+            if (str_contains($part, '-')) {
+                // Range like "3-5"
+                [$start, $end] = explode('-', $part, 2);
+                $start = (int) trim($start);
+                $end = (int) trim($end);
+                if ($start > 0 && $end >= $start) {
+                    for ($i = $start; $i <= $end; $i++) {
+                        $lines[] = $i;
+                    }
+                }
+            } else {
+                // Single line
+                $lineNum = (int) $part;
+                if ($lineNum > 0) {
+                    $lines[] = $lineNum;
+                }
+            }
+        }
+
+        return array_unique($lines);
+    }
+
+    /**
+     * Convert various values to boolean
+     */
+    protected function toBool($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            return in_array(strtolower($value), ['true', '1', 'yes', 'on'], true);
+        }
+        return (bool) $value;
+    }
+}
