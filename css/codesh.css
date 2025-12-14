@@ -194,6 +194,7 @@
     font-size: 0.875rem;
     line-height: 1.7;
     tab-size: 4;
+    background: transparent !important;
 }
 
 .codesh-block code {
@@ -434,7 +435,7 @@
     font-size: 0.875rem;
     line-height: 1.7;
     tab-size: 4;
-    background: transparent;
+    background: transparent !important;
 }
 
 .codesh-group-panel code {
