@@ -3,15 +3,97 @@
    Complete standalone styles
    =================================== */
 
-/* Main container */
+/* Main container - base styles */
 .codesh-block {
     position: relative;
     margin: 1.5rem 0;
     border-radius: 0.75rem;
     overflow: hidden;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* ===================================
+   DARK MODE (default)
+   =================================== */
+.codesh-block.codesh-dark {
     background-color: #1f2937;
 }
+
+.codesh-dark .codesh-header {
+    background-color: rgba(55, 65, 81, 0.5);
+    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.codesh-dark .codesh-lang {
+    color: #9ca3af;
+    background-color: rgba(75, 85, 99, 0.5);
+}
+
+.codesh-dark .codesh-title {
+    color: #d1d5db;
+}
+
+.codesh-dark .codesh-copy {
+    color: #d1d5db;
+    background-color: rgba(75, 85, 99, 0.8);
+    border-color: rgba(107, 114, 128, 0.5);
+}
+
+.codesh-dark .codesh-copy:hover {
+    background-color: rgba(107, 114, 128, 0.8);
+    color: #ffffff;
+    border-color: rgba(156, 163, 175, 0.5);
+}
+
+.codesh-dark .codesh-copy.copied {
+    background-color: rgba(34, 197, 94, 0.9);
+    color: #ffffff;
+    border-color: rgba(34, 197, 94, 0.8);
+}
+
+/* ===================================
+   LIGHT MODE
+   =================================== */
+.codesh-block.codesh-light {
+    background-color: #f3f4f6;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.codesh-light .codesh-header {
+    background-color: rgba(229, 231, 235, 0.8);
+    border-bottom: 1px solid rgba(209, 213, 219, 0.5);
+}
+
+.codesh-light .codesh-lang {
+    color: #4b5563;
+    background-color: rgba(209, 213, 219, 0.7);
+}
+
+.codesh-light .codesh-title {
+    color: #374151;
+}
+
+.codesh-light .codesh-copy {
+    color: #4b5563;
+    background-color: rgba(209, 213, 219, 0.8);
+    border-color: rgba(156, 163, 175, 0.5);
+}
+
+.codesh-light .codesh-copy:hover {
+    background-color: rgba(156, 163, 175, 0.8);
+    color: #111827;
+    border-color: rgba(107, 114, 128, 0.5);
+}
+
+.codesh-light .codesh-copy.copied {
+    background-color: rgba(34, 197, 94, 0.9);
+    color: #ffffff;
+    border-color: rgba(34, 197, 94, 0.8);
+}
+
+/* ===================================
+   SHARED STYLES
+   =================================== */
 
 /* Header bar */
 .codesh-header {
@@ -19,19 +101,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.625rem 1rem;
-    background-color: rgba(55, 65, 81, 0.5);
-    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
 }
 
 /* Language badge */
 .codesh-lang {
     font-size: 0.75rem;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    color: #9ca3af;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 0.25rem 0.5rem;
-    background-color: rgba(75, 85, 99, 0.5);
     border-radius: 0.25rem;
 }
 
@@ -39,7 +117,6 @@
 .codesh-title {
     font-size: 0.875rem;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    color: #d1d5db;
 }
 
 /* Copy button */
@@ -50,24 +127,10 @@
     padding: 0.375rem 0.625rem;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #d1d5db;
-    background-color: rgba(75, 85, 99, 0.8);
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    border: 1px solid;
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.codesh-copy:hover {
-    background-color: rgba(107, 114, 128, 0.8);
-    color: #ffffff;
-    border-color: rgba(156, 163, 175, 0.5);
-}
-
-.codesh-copy.copied {
-    background-color: rgba(34, 197, 94, 0.9);
-    color: #ffffff;
-    border-color: rgba(34, 197, 94, 0.8);
 }
 
 .codesh-copy-icon {
@@ -190,4 +253,13 @@
 
 .codesh-block .line .inserted {
     color: #4ade80;
+}
+
+/* Light mode diff colors */
+.codesh-light .line .deleted {
+    color: #dc2626;
+}
+
+.codesh-light .line .inserted {
+    color: #16a34a;
 }

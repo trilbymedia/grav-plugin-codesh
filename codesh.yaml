@@ -1,4 +1,6 @@
 enabled: true
 active: true
-theme: github-dark
+mode: dark
+theme_dark: github-dark
+theme_light: github-light
 show_line_numbers: false

@@ -43,70 +43,87 @@ form:
       validate:
         type: bool
 
-    theme:
+    mode:
       type: select
-      label: Default Theme
+      label: Default Mode
+      help: Controls both the chrome styling and syntax theme
+      default: dark
+      options:
+        dark: Dark
+        light: Light
+
+    theme_dark:
+      type: select
+      label: Dark Theme
+      help: Syntax highlighting theme for dark mode
       default: github-dark
       options:
         andromeeda: Andromeeda
         aurora-x: Aurora X
         ayu-dark: Ayu Dark
         catppuccin-frappe: Catppuccin Frappé
-        catppuccin-latte: Catppuccin Latte
         catppuccin-macchiato: Catppuccin Macchiato
         catppuccin-mocha: Catppuccin Mocha
         dark-plus: Dark+
         dracula: Dracula
         dracula-soft: Dracula Soft
         everforest-dark: Everforest Dark
-        everforest-light: Everforest Light
         github-dark: GitHub Dark
         github-dark-default: GitHub Dark Default
         github-dark-dimmed: GitHub Dark Dimmed
         github-dark-high-contrast: GitHub Dark High Contrast
-        github-light: GitHub Light
-        github-light-default: GitHub Light Default
-        github-light-high-contrast: GitHub Light High Contrast
         gruvbox-dark-hard: Gruvbox Dark Hard
         gruvbox-dark-medium: Gruvbox Dark Medium
         gruvbox-dark-soft: Gruvbox Dark Soft
-        gruvbox-light-hard: Gruvbox Light Hard
-        gruvbox-light-medium: Gruvbox Light Medium
-        gruvbox-light-soft: Gruvbox Light Soft
         houston: Houston
         kanagawa-dragon: Kanagawa Dragon
-        kanagawa-lotus: Kanagawa Lotus
         kanagawa-wave: Kanagawa Wave
         laserwave: Laserwave
-        light-plus: Light+
         material-theme: Material Theme
         material-theme-darker: Material Theme Darker
-        material-theme-lighter: Material Theme Lighter
         material-theme-ocean: Material Theme Ocean
         material-theme-palenight: Material Theme Palenight
         min-dark: Min Dark
-        min-light: Min Light
         monokai: Monokai
         night-owl: Night Owl
         nord: Nord
         one-dark-pro: One Dark Pro
-        one-light: One Light
         plastic: Plastic
         poimandres: Poimandres
         red: Red
         rose-pine: Rosé Pine
-        rose-pine-dawn: Rosé Pine Dawn
         rose-pine-moon: Rosé Pine Moon
         slack-dark: Slack Dark
-        slack-ochin: Slack Ochin
-        snazzy-light: Snazzy Light
         solarized-dark: Solarized Dark
-        solarized-light: Solarized Light
         synthwave-84: Synthwave '84
         tokyo-night: Tokyo Night
         vesper: Vesper
         vitesse-black: Vitesse Black
         vitesse-dark: Vitesse Dark
+
+    theme_light:
+      type: select
+      label: Light Theme
+      help: Syntax highlighting theme for light mode
+      default: github-light
+      options:
+        catppuccin-latte: Catppuccin Latte
+        everforest-light: Everforest Light
+        github-light: GitHub Light
+        github-light-default: GitHub Light Default
+        github-light-high-contrast: GitHub Light High Contrast
+        gruvbox-light-hard: Gruvbox Light Hard
+        gruvbox-light-medium: Gruvbox Light Medium
+        gruvbox-light-soft: Gruvbox Light Soft
+        kanagawa-lotus: Kanagawa Lotus
+        light-plus: Light+
+        material-theme-lighter: Material Theme Lighter
+        min-light: Min Light
+        one-light: One Light
+        rose-pine-dawn: Rosé Pine Dawn
+        slack-ochin: Slack Ochin
+        snazzy-light: Snazzy Light
+        solarized-light: Solarized Light
         vitesse-light: Vitesse Light
 
     show_line_numbers:

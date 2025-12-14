@@ -39,7 +39,21 @@ class CodeshShortcode extends Shortcode
 
         // Get parameters - support both BBCode style [codesh=php] and attribute style [codesh lang="php"]
         $lang = $sc->getParameter('lang', $sc->getBbCode() ?? 'txt');
-        $theme = $sc->getParameter('theme', $config['theme'] ?? 'github-dark');
+
+        // Mode determines both chrome styling and default theme
+        $mode = $sc->getParameter('mode', $config['mode'] ?? 'dark');
+
+        // Get theme - explicit theme parameter overrides mode-based theme
+        $explicitTheme = $sc->getParameter('theme');
+        if ($explicitTheme) {
+            $theme = $explicitTheme;
+        } else {
+            // Use mode-appropriate theme from config
+            $theme = ($mode === 'light')
+                ? ($config['theme_light'] ?? 'github-light')
+                : ($config['theme_dark'] ?? 'github-dark');
+        }
+
         $lineNumbers = $this->toBool($sc->getParameter('line-numbers', $sc->getParameter('linenumbers', $config['show_line_numbers'] ?? false)));
         $startLine = (int) $sc->getParameter('start', $sc->getParameter('start-line', 1));
         $highlight = $sc->getParameter('highlight', $sc->getParameter('hl', ''));
@@ -104,6 +118,7 @@ class CodeshShortcode extends Shortcode
 
             // Wrap in container with optional class
             $classes = ['codesh-block'];
+            $classes[] = 'codesh-' . $mode; // Add mode class (codesh-dark or codesh-light)
             if (!empty($class)) {
                 $classes[] = htmlspecialchars($class);
             }
