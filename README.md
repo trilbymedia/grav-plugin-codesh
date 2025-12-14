@@ -144,27 +144,54 @@ theme: github-dark      # Default theme
 show_line_numbers: false # Default line numbers setting
 ```
 
-## Available Themes
+## Available Themes (60)
 
-Some popular themes include:
+### Dark Themes
+| Theme | Theme | Theme |
+|-------|-------|-------|
+| `andromeeda` | `aurora-x` | `ayu-dark` |
+| `catppuccin-frappe` | `catppuccin-macchiato` | `catppuccin-mocha` |
+| `dark-plus` | `dracula` | `dracula-soft` |
+| `everforest-dark` | `github-dark` | `github-dark-default` |
+| `github-dark-dimmed` | `github-dark-high-contrast` | `gruvbox-dark-hard` |
+| `gruvbox-dark-medium` | `gruvbox-dark-soft` | `houston` |
+| `kanagawa-dragon` | `kanagawa-wave` | `laserwave` |
+| `material-theme` | `material-theme-darker` | `material-theme-ocean` |
+| `material-theme-palenight` | `min-dark` | `monokai` |
+| `night-owl` | `nord` | `one-dark-pro` |
+| `plastic` | `poimandres` | `red` |
+| `rose-pine` | `rose-pine-moon` | `slack-dark` |
+| `solarized-dark` | `synthwave-84` | `tokyo-night` |
+| `vesper` | `vitesse-black` | `vitesse-dark` |
 
-- `github-dark`, `github-light`
-- `dracula`, `dracula-soft`
-- `nord`
-- `monokai`
-- `one-dark-pro`, `one-light`
-- `material-theme-*` variants
-- `catppuccin-*` variants
-- `solarized-dark`, `solarized-light`
-- `tokyo-night`
-- `rose-pine`, `rose-pine-dawn`, `rose-pine-moon`
-- And 50+ more!
+### Light Themes
+| Theme | Theme | Theme |
+|-------|-------|-------|
+| `catppuccin-latte` | `everforest-light` | `github-light` |
+| `github-light-default` | `github-light-high-contrast` | `gruvbox-light-hard` |
+| `gruvbox-light-medium` | `gruvbox-light-soft` | `kanagawa-lotus` |
+| `light-plus` | `material-theme-lighter` | `min-light` |
+| `one-light` | `rose-pine-dawn` | `slack-ochin` |
+| `snazzy-light` | `solarized-light` | `vitesse-light` |
 
-## Supported Languages
-
-Common languages include: php, javascript, typescript, python, ruby, java, csharp, cpp, go, rust, swift, kotlin, html, css, scss, json, yaml, xml, sql, bash, and 200+ more.
+## Supported Languages (245)
 
 Language aliases are supported (e.g., `js` for `javascript`, `py` for `python`, `sh` for `bash`).
+
+### Programming Languages
+`abap`, `actionscript-3`, `ada`, `apex`, `apl`, `applescript`, `ara`, `asm`, `awk`, `ballerina`, `bat`, `berry`, `bsl`, `c`, `cadence`, `cairo`, `clarity`, `clojure`, `cobol`, `coffee`, `common-lisp`, `coq`, `cpp`, `crystal`, `csharp`, `d`, `dart`, `dream-maker`, `elixir`, `elm`, `emacs-lisp`, `erlang`, `fennel`, `fish`, `fortran-fixed-form`, `fortran-free-form`, `fsharp`, `gdscript`, `genie`, `gleam`, `go`, `groovy`, `hack`, `haskell`, `haxe`, `hy`, `imba`, `java`, `javascript`, `jison`, `julia`, `kotlin`, `lean`, `llvm`, `logo`, `lua`, `luau`, `matlab`, `mojo`, `move`, `nextflow`, `nim`, `nix`, `nushell`, `objective-c`, `objective-cpp`, `ocaml`, `pascal`, `perl`, `php`, `pkl`, `plsql`, `polar`, `powershell`, `prolog`, `puppet`, `purescript`, `python`, `qml`, `r`, `racket`, `raku`, `razor`, `rel`, `riscv`, `ruby`, `rust`, `sas`, `scala`, `scheme`, `sdbl`, `shellscript`, `smalltalk`, `solidity`, `splunk`, `sql`, `stata`, `swift`, `system-verilog`, `systemd`, `talonscript`, `tcl`, `terraform`, `typescript`, `typst`, `v`, `vala`, `vb`, `verilog`, `vhdl`, `viml`, `vyper`, `wasm`, `wenyan`, `wgsl`, `wolfram`, `zenscript`, `zig`
+
+### Web & Markup
+`angular-expression`, `angular-html`, `angular-inline-style`, `angular-inline-template`, `angular-let-declaration`, `angular-template-blocks`, `angular-template`, `angular-ts`, `antlers`, `astro`, `blade`, `css`, `edge`, `erb`, `es-tag-css`, `es-tag-glsl`, `es-tag-html`, `es-tag-sql`, `es-tag-xml`, `glimmer-js`, `glimmer-ts`, `graphql`, `haml`, `handlebars`, `html`, `html-derivative`, `http`, `hurl`, `jinja`, `jinja-html`, `jsx`, `less`, `liquid`, `marko`, `mdc`, `mdx`, `postcss`, `pug`, `sass`, `scss`, `stylus`, `svelte`, `templ`, `ts-tags`, `tsx`, `twig`, `vue`, `vue-directives`, `vue-html`, `vue-interpolations`, `vue-sfc-style-variable-injection`, `vue-vine`, `wikitext`, `xml`, `xsl`
+
+### Data & Config
+`beancount`, `bibtex`, `bicep`, `cmake`, `codeowners`, `codeql`, `csv`, `cue`, `cypher`, `dax`, `desktop`, `diff`, `docker`, `dotenv`, `fluent`, `gdresource`, `gdshader`, `gherkin`, `git-commit`, `git-rebase`, `gnuplot`, `hcl`, `hjson`, `hxml`, `ini`, `json`, `json5`, `jsonc`, `jsonl`, `jsonnet`, `jssm`, `kdl`, `kusto`, `log`, `make`, `narrat`, `nginx`, `po`, `powerquery`, `prisma`, `proto`, `qmldir`, `qss`, `reg`, `regexp`, `rosmsg`, `rst`, `sparql`, `ssh-config`, `tasl`, `toml`, `tsv`, `turtle`, `typespec`, `wit`, `yaml`
+
+### Documentation
+`apache`, `asciidoc`, `latex`, `maml`, `markdown`, `markdown-vue`, `tex`, `txt`
+
+### Shaders & Graphics
+`glsl`, `hlsl`, `shaderlab`
 
 ## Shortcode Attributes Reference
 
@@ -176,6 +203,9 @@ Language aliases are supported (e.g., `js` for `javascript`, `py` for `python`, 
 | `start` | Starting line number | `start="10"` |
 | `highlight` / `hl` | Lines to highlight | `highlight="1,3-5"` |
 | `focus` | Lines to focus | `focus="2-4"` |
+| `title` | Filename or title in header | `title="config.yaml"` |
+| `show-lang` | Show/hide language badge | `show-lang="false"` |
+| `header` | Show/hide entire header bar | `header="false"` |
 | `class` | Additional CSS class | `class="my-class"` |
 
 ## CSS Customization

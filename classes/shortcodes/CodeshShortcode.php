@@ -47,6 +47,7 @@ class CodeshShortcode extends Shortcode
         $class = $sc->getParameter('class', '');
         $showLang = $this->toBool($sc->getParameter('show-lang', $sc->getParameter('showlang', true)));
         $title = $sc->getParameter('title', '');
+        $showHeader = $this->toBool($sc->getParameter('header', true));
 
         // Get code content - handle markdown fenced code blocks
         $content = $sc->getContent() ?? '';
@@ -115,6 +116,9 @@ class CodeshShortcode extends Shortcode
 
             // Build data attributes
             $dataAttrs = 'data-language="' . htmlspecialchars($lang) . '"';
+            if (!$showHeader) {
+                $dataAttrs .= ' data-hide-header="true"';
+            }
             if (!$showLang) {
                 $dataAttrs .= ' data-hide-lang="true"';
             }
