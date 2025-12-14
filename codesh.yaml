@@ -1,6 +1,6 @@
 enabled: true
 active: true
-theme_dark: github-dark
-theme_light: github-light
+theme_dark: one-dark-pro
+theme_light: one-light
 show_line_numbers: false
 process_markdown: true

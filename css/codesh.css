@@ -168,12 +168,16 @@
 
 /* Dark mode: switch to dark theme colors via CSS variables */
 .dark .codesh-dual-theme .shiki,
-.dark .codesh-dual-theme .phiki {
+.dark .codesh-dual-theme .phiki,
+.dark .codesh-group .shiki,
+.dark .codesh-group .phiki {
     background-color: var(--shiki-dark-bg, var(--phiki-dark-background-color)) !important;
 }
 
 .dark .codesh-dual-theme .shiki span,
-.dark .codesh-dual-theme .phiki span {
+.dark .codesh-dual-theme .phiki span,
+.dark .codesh-group .shiki span,
+.dark .codesh-group .phiki span {
     color: var(--shiki-dark, var(--phiki-dark-color)) !important;
     font-style: var(--shiki-dark-font-style, var(--phiki-dark-font-style)) !important;
     font-weight: var(--shiki-dark-font-weight, var(--phiki-dark-font-weight)) !important;
@@ -413,6 +417,22 @@
 
 .codesh-group-panel.active {
     display: block;
+}
+
+/* Hide any inner headers - group has its own header */
+.codesh-group-panel .codesh-header,
+.codesh-group-panel .code-header {
+    display: none !important;
+}
+
+/* Reset any .code-block wrapper injected by theme */
+.codesh-group-panel .code-block {
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    ring: none;
 }
 
 /* Reset styles for panels inside groups */
