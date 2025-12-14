@@ -1,0 +1,52 @@
+{% extends "forms/field.html.twig" %}
+
+{% block global_attributes %}
+    data-grav-field="codeshtheme"
+    data-grav-codeshtheme-field
+    {{ parent() }}
+{% endblock %}
+
+{% block input %}
+    {# Ensure value is a string, defaulting to empty string if null/undefined #}
+    {% set current_value = value is iterable ? '' : (value ?? '') %}
+
+    {% set placeholder = field.placeholder|default('Select a theme...') %}
+    {% set choose_label = field.choose_label|default('Choose Theme') %}
+    {% set clear_label = field.clear_label|default('Clear') %}
+    {% set variant = field.variant|default('dark') %}
+    {% set endpoint = admin_route('/codesh-themes') %}
+
+    <div class="codeshtheme-field__container"
+         data-endpoint="{{ endpoint|e('html_attr') }}"
+         data-nonce="{{ admin.getNonce()|e('html_attr') }}"
+         data-variant="{{ variant|e('html_attr') }}"
+         data-placeholder="{{ placeholder|e('html_attr') }}"
+         data-value="{{ current_value|e('html_attr') }}">
+        <div class="codeshtheme-field__preview" data-codeshtheme-preview>
+            {% if current_value %}
+                <span class="codeshtheme-field__value">{{ current_value }}</span>
+            {% else %}
+                <span class="codeshtheme-field__placeholder">{{ placeholder }}</span>
+            {% endif %}
+        </div>
+        <div class="codeshtheme-field__actions">
+            <button type="button" class="button codeshtheme-field__choose" data-codeshtheme-choose>
+                <i class="fa fa-palette"></i> {{ choose_label }}
+            </button>
+            <button type="button" class="button codeshtheme-field__clear" data-codeshtheme-clear{% if not current_value %} disabled{% endif %}>
+                <i class="fa fa-times"></i> {{ clear_label }}
+            </button>
+        </div>
+        <input
+            type="hidden"
+            name="{{ (scope ~ field.name)|fieldName }}"
+            value="{{ current_value }}"
+            data-codeshtheme-input
+        />
+        <noscript>
+            <div class="codeshtheme-field__nojs">
+                JavaScript is required to use the theme chooser. Enter the theme name manually in the page frontmatter.
+            </div>
+        </noscript>
+    </div>
+{% endblock %}

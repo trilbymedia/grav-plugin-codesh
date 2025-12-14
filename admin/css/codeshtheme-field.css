@@ -1,0 +1,439 @@
+/**
+ * CodeSh Theme Picker Field Styles
+ */
+
+/* Field Container */
+.codeshtheme-field__container {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.codeshtheme-field__preview {
+    position: relative;
+    flex: 1;
+    border: 1px solid var(--theme-border-color, #dfe3e9);
+    background: var(--theme-panel-background, #fff);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    min-height: 2.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.codeshtheme-field__value {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--theme-text-color, #142136);
+}
+
+.codeshtheme-field__placeholder {
+    font-size: 1rem;
+    color: var(--theme-text-muted, #64748b);
+}
+
+.codeshtheme-field__actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+}
+
+.codeshtheme-field__actions .button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.codeshtheme-field__nojs {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--theme-text-muted, #64748b);
+}
+
+/* Modal Styles */
+.codeshtheme-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.codeshtheme-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.codeshtheme-modal__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.codeshtheme-modal__dialog {
+    position: relative;
+    margin: 4vh auto;
+    max-width: 900px;
+    width: 94%;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--theme-dialog-background, #ffffff);
+    color: var(--theme-dialog-color, #0f172a);
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);
+    overflow: hidden;
+}
+
+.codeshtheme-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--theme-border-color, #dfe3e9);
+    gap: 1rem;
+}
+
+.codeshtheme-modal__header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.codeshtheme-modal__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.codeshtheme-modal__import-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    border: 1px solid var(--theme-border-color, #dfe3e9);
+    background: var(--theme-panel-background, #f8fafc);
+    color: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.codeshtheme-modal__import-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.codeshtheme-modal__close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    padding: 0;
+}
+
+.codeshtheme-modal__controls {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--theme-border-color, #dfe3e9);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.codeshtheme-modal__search {
+    flex: 1 1 200px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--theme-border-color, #dfe3e9);
+    font-size: 0.95rem;
+    background: var(--theme-input-background, #f8fafc);
+    color: inherit;
+    height: 2.25rem;
+    box-sizing: border-box;
+}
+
+.codeshtheme-modal__filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.codeshtheme-modal__filter-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--theme-text-muted, #64748b);
+    cursor: pointer;
+}
+
+.codeshtheme-modal__filter-label input {
+    margin: 0;
+}
+
+/* Theme Grid */
+.codeshtheme-modal__grid {
+    padding: 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    overflow-y: auto;
+    min-height: 300px;
+    max-height: calc(92vh - 180px);
+    position: relative;
+}
+
+/* Theme Card */
+.codeshtheme-modal__card {
+    background: #fff;
+    border: 2px solid var(--theme-border-color, #e5e7eb);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.codeshtheme-modal__card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.codeshtheme-modal__card.is-selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.codeshtheme-modal__card.is-custom {
+    border-color: #8b5cf6;
+}
+
+.codeshtheme-modal__card.is-custom:hover {
+    border-color: #7c3aed;
+}
+
+.codeshtheme-modal__card-preview {
+    position: relative;
+    overflow: hidden;
+    font-size: 9px;
+    line-height: 1.35;
+    background: #1f1f22;
+}
+
+.codeshtheme-modal__card-preview pre {
+    margin: 0;
+    padding: 0.5rem;
+    background: inherit !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Badges floating in top-right corner of preview */
+.codeshtheme-modal__card-badges {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.codeshtheme-modal__card-info {
+    padding: 0.5rem 0.6rem;
+    border-top: 1px solid var(--theme-border-color, #e5e7eb);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--theme-panel-background, #f9fafb);
+    gap: 0.5rem;
+}
+
+.codeshtheme-modal__card-name {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--theme-text-color, #1f2937);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.codeshtheme-modal__card-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    background: rgba(139, 92, 246, 0.9);
+    color: #fff;
+}
+
+.codeshtheme-modal__card-delete {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+.codeshtheme-modal__card-delete:hover {
+    color: #b91c1c;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Just imported highlight animation */
+.codeshtheme-modal__card.is-just-imported {
+    animation: importHighlight 2s ease-out;
+}
+
+@keyframes importHighlight {
+    0%, 30% {
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5);
+        border-color: #22c55e;
+    }
+    100% {
+        box-shadow: none;
+        border-color: var(--theme-border-color, #e5e7eb);
+    }
+}
+
+/* Status Messages */
+.codeshtheme-modal__status {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--theme-text-muted, #64748b);
+}
+
+.codeshtheme-modal__status--loading {
+    color: #3b82f6;
+}
+
+.codeshtheme-modal__status--error {
+    color: #dc2626;
+}
+
+.codeshtheme-modal__status--success {
+    color: #16a34a;
+    font-weight: 500;
+    padding: 1rem 0.5rem;
+}
+
+/* Footer */
+.codeshtheme-modal__footer {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+    color: var(--theme-text-muted, #64748b);
+    border-top: 1px solid var(--theme-border-color, #dfe3e9);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Hidden file input */
+.codeshtheme-modal__file-input {
+    display: none;
+}
+
+/* Delete Confirmation */
+.codeshtheme-modal__confirm {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border-radius: 6px;
+    padding: 1rem;
+    z-index: 10;
+}
+
+.codeshtheme-modal__confirm p {
+    margin: 0;
+    font-size: 0.85rem;
+    text-align: center;
+    color: #1f2937;
+}
+
+.codeshtheme-modal__confirm-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.codeshtheme-modal__confirm-btn {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.codeshtheme-modal__confirm-btn--cancel {
+    border-color: #d1d5db;
+    background: #fff;
+    color: #374151;
+}
+
+.codeshtheme-modal__confirm-btn--cancel:hover {
+    background: #f3f4f6;
+}
+
+.codeshtheme-modal__confirm-btn--delete {
+    border-color: #ef4444;
+    background: #ef4444;
+    color: #fff;
+}
+
+.codeshtheme-modal__confirm-btn--delete:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .codeshtheme-modal__dialog {
+        width: 98%;
+        margin: 2vh auto;
+        max-height: 96vh;
+    }
+
+    .codeshtheme-modal__grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        max-height: calc(96vh - 180px);
+    }
+}
+
+@media (max-width: 480px) {
+    .codeshtheme-modal__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .codeshtheme-modal__controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .codeshtheme-modal__filters {
+        justify-content: center;
+    }
+}
