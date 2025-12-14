@@ -5,12 +5,16 @@ Server-side syntax highlighting for Grav CMS using [Phiki](https://phiki.dev), a
 ## Features
 
 - **Server-side rendering** - No JavaScript required for syntax highlighting
+- **Automatic theme switching** - Detects light/dark mode and switches themes automatically
 - **70+ themes** - All VS Code themes including GitHub, Dracula, Nord, Monokai, and more
 - **200+ languages** - Full TextMate grammar support for accurate highlighting
+- **Markdown processing** - Automatically highlights fenced code blocks in markdown
 - **Line numbers** - Optional line number gutter with custom starting line
 - **Line highlighting** - Highlight specific lines to draw attention
 - **Line focus** - Dim non-focused lines to emphasize important code
-- **Markdown compatibility** - Wrap standard fenced code blocks for editor support
+- **Title/filename display** - Show filename or custom title in the header
+- **Minimal mode** - Hide header for clean, minimal appearance
+- **Code groups** - Tabbed interface for multiple code examples with sync support
 
 ## Installation
 
@@ -28,6 +32,8 @@ Server-side syntax highlighting for Grav CMS using [Phiki](https://phiki.dev), a
 
 ### Basic Syntax
 
+Use BBCode-style parameter for the language:
+
 ```markdown
 [codesh=php]
 <?php
@@ -35,7 +41,7 @@ echo "Hello, World!";
 [/codesh]
 ```
 
-### With Language Attribute
+Or use the `lang` attribute:
 
 ```markdown
 [codesh lang="javascript"]
@@ -43,6 +49,16 @@ const greeting = "Hello, World!";
 console.log(greeting);
 [/codesh]
 ```
+
+### Automatic Markdown Processing
+
+Fenced code blocks in markdown are automatically highlighted:
+
+```js
+console.log("Hello, World!");
+```
+
+This feature can be disabled via the `process_markdown` config option.
 
 ### Wrapping Markdown Code Blocks
 
@@ -95,6 +111,8 @@ const g = 7;
 [/codesh]
 ```
 
+Syntax: Single lines (`1,3,5`), ranges (`2-4`), or combined (`1,3-5,8`).
+
 ### Line Focus
 
 Focus on specific lines (dims non-focused lines):
@@ -111,9 +129,46 @@ function example() {
 [/codesh]
 ```
 
+### Title / Filename Display
+
+Show a filename or custom title in the header:
+
+```markdown
+[codesh lang="php" title="src/Controller/UserController.php"]
+<?php
+namespace App\Controller;
+
+class UserController extends AbstractController
+{
+    // ...
+}
+[/codesh]
+```
+
+### Hide Language Badge
+
+Hide the language badge while keeping the header:
+
+```markdown
+[codesh lang="bash" show-lang="false"]
+npm install
+npm run build
+[/codesh]
+```
+
+### Minimal Mode (No Header)
+
+Hide the entire header for a super minimal look:
+
+```markdown
+[codesh lang="javascript" header="false"]
+const minimal = true;
+[/codesh]
+```
+
 ### Custom Theme Per Block
 
-Override the default theme for a specific code block:
+Override the automatic theme for a specific code block:
 
 ```markdown
 [codesh lang="rust" theme="dracula"]
@@ -133,6 +188,54 @@ Add custom classes for additional styling:
 [/codesh]
 ```
 
+## Code Groups
+
+Display multiple code examples in a tabbed interface. Use the `title` attribute on each `[codesh]` block to set the tab label.
+
+### Basic Code Group
+
+```markdown
+[codesh-group]
+[codesh lang="javascript" title="helloWorld.js"]
+console.log("Hello World");
+[/codesh]
+[codesh lang="python" title="hello_world.py"]
+print("Hello World")
+[/codesh]
+[codesh lang="java" title="HelloWorld.java"]
+System.out.println("Hello World");
+[/codesh]
+[/codesh-group]
+```
+
+### Synced Code Groups
+
+Use the `sync` attribute to synchronize tab selection across multiple code groups. When a tab is selected in one group, all groups with the same sync key will switch to the matching tab.
+
+```markdown
+[codesh-group sync="lang"]
+[codesh lang="javascript" title="JavaScript"]
+const name = "World";
+[/codesh]
+[codesh lang="python" title="Python"]
+name = "World"
+[/codesh]
+[/codesh-group]
+
+Some text in between...
+
+[codesh-group sync="lang"]
+[codesh lang="javascript" title="JavaScript"]
+console.log(`Hello, ${name}!`);
+[/codesh]
+[codesh lang="python" title="Python"]
+print(f"Hello, {name}!")
+[/codesh]
+[/codesh-group]
+```
+
+Tab selections are also persisted in localStorage, so they survive page reloads.
+
 ## Configuration
 
 In `user/config/plugins/codesh.yaml`:
@@ -140,11 +243,23 @@ In `user/config/plugins/codesh.yaml`:
 ```yaml
 enabled: true
 active: true
-theme: github-dark      # Default theme
-show_line_numbers: false # Default line numbers setting
+theme_dark: github-dark     # Theme for dark mode
+theme_light: github-light   # Theme for light mode
+show_line_numbers: false    # Default line numbers setting
+process_markdown: true      # Auto-highlight markdown code blocks
 ```
 
-## Available Themes (60)
+### Theme Selection
+
+Codesh automatically detects your theme's light/dark mode setting:
+
+- **System mode**: Uses CSS variable switching for instant theme changes
+- **Light mode**: Uses the `theme_light` setting
+- **Dark mode**: Uses the `theme_dark` setting
+
+When you specify an explicit `theme` attribute on a code block, that theme is used regardless of mode.
+
+## Available Themes (60+)
 
 ### Dark Themes
 | Theme | Theme | Theme |
@@ -198,7 +313,7 @@ Language aliases are supported (e.g., `js` for `javascript`, `py` for `python`, 
 | Attribute | Description | Example |
 |-----------|-------------|---------|
 | `lang` | Programming language | `lang="php"` |
-| `theme` | Color theme | `theme="dracula"` |
+| `theme` | Override color theme | `theme="dracula"` |
 | `line-numbers` | Show line numbers | `line-numbers="true"` |
 | `start` | Starting line number | `start="10"` |
 | `highlight` / `hl` | Lines to highlight | `highlight="1,3-5"` |
@@ -212,13 +327,39 @@ Language aliases are supported (e.g., `js` for `javascript`, `py` for `python`, 
 
 The plugin provides CSS classes for styling:
 
+### Container Classes
 - `.codesh-block` - Main container
+- `.codesh-block.no-header` - Container without header
+- `.codesh-block.has-highlights` - Container with highlighted lines
+- `.codesh-block.has-focus` - Container with focused lines
+- `.codesh-dual-theme` - Container using CSS variable theme switching
+
+### Header Classes
+- `.codesh-header` - Header bar
+- `.codesh-lang` - Language badge
+- `.codesh-title` - Title/filename display
+- `.codesh-copy` - Copy button
+- `.codesh-copy.copied` - Copy button after successful copy
+
+### Code Classes
+- `.codesh-code` - Code wrapper
 - `.codesh-block pre` - Pre element
 - `.codesh-block .line` - Each line of code
 - `.codesh-block .line.highlight` - Highlighted lines
 - `.codesh-block .line.focus` - Focused lines
-- `.codesh-block.has-focus .line:not(.focus)` - Non-focused lines (dimmed)
-- `.codesh-block .gutter` - Line number gutter
+- `.codesh-block .line-number` - Line number elements
+
+### Dark Mode
+
+The plugin uses Tailwind-style dark mode with `.dark` ancestor:
+
+```css
+/* Light mode (default) */
+.codesh-block { ... }
+
+/* Dark mode */
+.dark .codesh-block { ... }
+```
 
 ## License
 

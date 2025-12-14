@@ -1,18 +1,53 @@
 /**
  * Codesh - Code Syntax Highlighter
- * Copy to clipboard functionality
+ * Copy to clipboard and code group tab functionality
  */
 (function() {
     'use strict';
+
+    const STORAGE_KEY = 'codesh-tabs';
+
+    /**
+     * Get stored tab preferences
+     */
+    function getStoredTabs() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        } catch (e) {
+            return {};
+        }
+    }
+
+    /**
+     * Store tab preference
+     */
+    function storeTab(syncKey, tabTitle) {
+        try {
+            const stored = getStoredTabs();
+            stored[syncKey] = tabTitle;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+        } catch (e) {
+            // Ignore storage errors
+        }
+    }
 
     /**
      * Copy code to clipboard
      */
     async function copyCode(button) {
+        // Check if we're in a code group or a regular block
+        const group = button.closest('.codesh-group');
         const block = button.closest('.codesh-block');
-        if (!block) return;
 
-        const codeEl = block.querySelector('.codesh-code code');
+        let codeEl;
+        if (group) {
+            // For groups, get the active panel's code
+            const activePanel = group.querySelector('.codesh-group-panel.active');
+            codeEl = activePanel ? activePanel.querySelector('code') : null;
+        } else if (block) {
+            codeEl = block.querySelector('.codesh-code code');
+        }
+
         if (!codeEl) return;
 
         try {
@@ -51,15 +86,100 @@
     }
 
     /**
+     * Switch to a tab in a code group
+     */
+    function switchTab(group, tabButton) {
+        const tabId = tabButton.dataset.tab;
+        const tabTitle = tabButton.textContent.trim();
+
+        // Update tab active states
+        group.querySelectorAll('.codesh-group-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.tab === tabId);
+        });
+
+        // Update panel active states
+        group.querySelectorAll('.codesh-group-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.dataset.panel === tabId);
+        });
+
+        // Sync with other groups if sync key is present
+        const syncKey = group.dataset.sync;
+        if (syncKey) {
+            storeTab(syncKey, tabTitle);
+            syncTabs(syncKey, tabTitle, group);
+        }
+    }
+
+    /**
+     * Sync tabs across groups with same sync key
+     */
+    function syncTabs(syncKey, tabTitle, excludeGroup) {
+        document.querySelectorAll(`.codesh-group[data-sync="${syncKey}"]`).forEach(group => {
+            if (group === excludeGroup) return;
+
+            // Find a tab with matching title
+            const matchingTab = Array.from(group.querySelectorAll('.codesh-group-tab'))
+                .find(tab => tab.textContent.trim() === tabTitle);
+
+            if (matchingTab) {
+                switchTab(group, matchingTab);
+            }
+        });
+    }
+
+    /**
+     * Restore stored tab preferences
+     */
+    function restoreStoredTabs() {
+        const stored = getStoredTabs();
+
+        Object.entries(stored).forEach(([syncKey, tabTitle]) => {
+            document.querySelectorAll(`.codesh-group[data-sync="${syncKey}"]`).forEach(group => {
+                const matchingTab = Array.from(group.querySelectorAll('.codesh-group-tab'))
+                    .find(tab => tab.textContent.trim() === tabTitle);
+
+                if (matchingTab && !matchingTab.classList.contains('active')) {
+                    switchTab(group, matchingTab);
+                }
+            });
+        });
+    }
+
+    /**
      * Initialize copy buttons
      */
-    function init() {
+    function initCopyButtons() {
         document.querySelectorAll('.codesh-copy').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 copyCode(this);
             });
         });
+    }
+
+    /**
+     * Initialize code groups
+     */
+    function initCodeGroups() {
+        document.querySelectorAll('.codesh-group').forEach(group => {
+            group.querySelectorAll('.codesh-group-tab').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchTab(group, this);
+                });
+            });
+        });
+
+        // Restore stored preferences
+        restoreStoredTabs();
+    }
+
+    /**
+     * Initialize all functionality
+     */
+    function init() {
+        initCopyButtons();
+        initCodeGroups();
     }
 
     // Initialize when DOM is ready

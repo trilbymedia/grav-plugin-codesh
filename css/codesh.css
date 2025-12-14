@@ -286,3 +286,179 @@
 .codesh-block pre::-webkit-scrollbar-thumb:hover {
     background: rgba(128, 128, 128, 0.5);
 }
+
+/* ===================================
+   CODE GROUPS - Tabbed Code Blocks
+   =================================== */
+.codesh-group {
+    position: relative;
+    margin: 1.5rem 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Light mode group */
+.codesh-group {
+    background-color: #f3f4f6;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode group */
+.dark .codesh-group {
+    background-color: #1f2937;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Group header */
+.codesh-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    background-color: rgba(229, 231, 235, 0.8);
+    border-bottom: 1px solid rgba(209, 213, 219, 0.5);
+}
+
+.dark .codesh-group-header {
+    background-color: rgba(55, 65, 81, 0.5);
+    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+/* Tabs container */
+.codesh-group-tabs {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.codesh-group-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+/* Individual tab */
+.codesh-group-tab {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+    margin-bottom: -1px;
+}
+
+.codesh-group-tab:hover {
+    color: #374151;
+}
+
+.codesh-group-tab.active {
+    color: #111827;
+    border-bottom-color: #3b82f6;
+}
+
+/* Dark mode tabs */
+.dark .codesh-group-tab {
+    color: #9ca3af;
+}
+
+.dark .codesh-group-tab:hover {
+    color: #d1d5db;
+}
+
+.dark .codesh-group-tab.active {
+    color: #f3f4f6;
+    border-bottom-color: #3b82f6;
+}
+
+/* Copy button in group header */
+.codesh-group-header .codesh-copy {
+    color: #4b5563;
+    background-color: rgba(209, 213, 219, 0.8);
+    border-color: rgba(156, 163, 175, 0.5);
+    flex-shrink: 0;
+}
+
+.codesh-group-header .codesh-copy:hover {
+    background-color: rgba(156, 163, 175, 0.8);
+    color: #111827;
+    border-color: rgba(107, 114, 128, 0.5);
+}
+
+.dark .codesh-group-header .codesh-copy {
+    color: #d1d5db;
+    background-color: rgba(75, 85, 99, 0.8);
+    border-color: rgba(107, 114, 128, 0.5);
+}
+
+.dark .codesh-group-header .codesh-copy:hover {
+    background-color: rgba(107, 114, 128, 0.8);
+    color: #ffffff;
+    border-color: rgba(156, 163, 175, 0.5);
+}
+
+/* Tab panels container */
+.codesh-group-panels {
+    position: relative;
+}
+
+/* Individual panel */
+.codesh-group-panel {
+    display: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.codesh-group-panel.active {
+    display: block;
+}
+
+/* Reset styles for panels inside groups */
+.codesh-group-panel .codesh-code {
+    overflow-x: auto;
+}
+
+.codesh-group-panel pre {
+    margin: 0;
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    tab-size: 4;
+    background: transparent;
+}
+
+.codesh-group-panel code {
+    font-family: inherit;
+    font-size: inherit;
+    background: none;
+    padding: 0;
+}
+
+/* Scrollbar for group panels */
+.codesh-group-panel pre::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.codesh-group-panel pre::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.codesh-group-panel pre::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 4px;
+}
+
+.codesh-group-panel pre::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.5);
+}
