@@ -259,6 +259,51 @@ Codesh automatically detects your theme's light/dark mode setting:
 
 When you specify an explicit `theme` attribute on a code block, that theme is used regardless of mode.
 
+## Theme Management
+
+The plugin includes a full-featured theme management system in the Grav Admin panel.
+
+### Theme Picker
+
+The plugin settings page features a custom theme picker for selecting dark and light themes:
+
+- **Visual Preview** - Each theme shows a live syntax-highlighted code preview
+- **Search** - Filter themes by name
+- **Filters** - Filter by All, Dark, Light, or Custom themes
+- **One-Click Selection** - Click any theme card to select it
+
+### Theme Gallery
+
+Access the full theme gallery via **Admin > CodeSh Themes** in the sidebar. This provides a read-only view of all available themes with full-size previews.
+
+### Importing Custom Themes
+
+Import VS Code compatible themes directly from JSON files:
+
+1. Click the **Import** button in the theme picker modal
+2. Select a `.json` theme file (VS Code theme format)
+3. The theme is automatically:
+   - Validated for required structure
+   - Normalized (short hex colors like `#fff` are expanded to `#ffffff`)
+   - Type-detected (light/dark) if not specified
+   - Saved to `user/data/codesh/themes/`
+
+Imported themes appear with a **Custom** badge and can be filtered using the Custom filter.
+
+### Deleting Custom Themes
+
+Custom/imported themes can be deleted:
+
+1. Click the red trash icon on any custom theme card
+2. Confirm the deletion in the dialog
+
+Note: Built-in themes cannot be deleted.
+
+### Theme Storage
+
+- **Built-in themes**: `user/plugins/codesh/themes/`
+- **Custom themes**: `user/data/codesh/themes/`
+
 ## Available Themes (60+)
 
 ### Dark Themes

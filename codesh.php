@@ -595,12 +595,251 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Add CSS and JS assets
+     * Add CSS and JS assets and Twig extensions
      */
     public function onTwigSiteVariables(): void
     {
         $this->grav['assets']->addCss('plugin://codesh/css/codesh.css');
         $this->grav['assets']->addJs('plugin://codesh/js/codesh.js', ['group' => 'bottom', 'defer' => true]);
+
+        // Add Twig filter for use in templates
+        $twig = $this->grav['twig']->twig();
+        $twig->addFilter(new \Twig\TwigFilter('codesh', [$this, 'codeshFilter'], ['is_safe' => ['html']]));
+    }
+
+    /**
+     * Twig filter to highlight code using codesh
+     *
+     * Usage in templates:
+     *   {{ code_string|codesh('json') }}
+     *   {{ code_string|codesh('php', {title: 'example.php', 'line-numbers': true}) }}
+     *
+     * @param string $content The code to highlight
+     * @param string $lang The language (default: 'txt')
+     * @param array $options Options: theme, line-numbers, start, highlight, focus, class, show-lang, title, header
+     * @return string The highlighted HTML
+     */
+    public function codeshFilter(string $content, string $lang = 'txt', array $options = []): string
+    {
+        $mergedOptions = array_merge([
+            'theme' => $options['theme'] ?? null,
+            'line-numbers' => $options['line-numbers'] ?? false,
+            'start' => $options['start'] ?? 1,
+            'highlight' => $options['highlight'] ?? '',
+            'focus' => $options['focus'] ?? '',
+            'class' => $options['class'] ?? '',
+            'show-lang' => $options['show-lang'] ?? true,
+            'title' => $options['title'] ?? '',
+            'header' => $options['header'] ?? true,
+        ], $options);
+
+        // Generate cache key based on content, language, options, and theme
+        $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
+        $cacheKey = 'codesh_' . md5($content . $lang . serialize($mergedOptions) . $themeConfig);
+
+        // Try to get from cache
+        $cache = $this->grav['cache'];
+        $cached = $cache->fetch($cacheKey);
+
+        if ($cached !== false) {
+            return $cached;
+        }
+
+        // Generate highlighted code
+        $result = $this->highlightCodeFull($content, $lang, $mergedOptions);
+
+        // Cache the result (1 hour TTL)
+        $cache->save($cacheKey, $result, 3600);
+
+        return $result;
+    }
+
+    /**
+     * Highlight code using Phiki (shared implementation for filter and page processing)
+     */
+    protected function highlightCodeFull(string $code, string $lang, array $options): string
+    {
+        $config = $this->config->get('plugins.codesh');
+
+        // Detect theme mode from Helios theme config
+        $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
+
+        // Use custom helios themes by default (with diff backgrounds)
+        $themeDark = $config['theme_dark'] ?? 'helios-dark';
+        $themeLight = $config['theme_light'] ?? 'helios-light';
+
+        // Get theme - explicit theme parameter overrides mode-based themes
+        $explicitTheme = $options['theme'] ?? null;
+        if ($explicitTheme) {
+            $theme = $explicitTheme;
+        } elseif ($themeConfig === 'system') {
+            $theme = [
+                'light' => $themeLight,
+                'dark' => $themeDark,
+            ];
+        } else {
+            $theme = ($themeConfig === 'dark') ? $themeDark : $themeLight;
+        }
+
+        $lineNumbers = $this->toBool($options['line-numbers'] ?? $config['show_line_numbers'] ?? false);
+        $startLine = (int) ($options['start'] ?? 1);
+        $highlight = $options['highlight'] ?? '';
+        $focus = $options['focus'] ?? '';
+        $class = $options['class'] ?? '';
+        $showLang = $this->toBool($options['show-lang'] ?? true);
+        $title = $options['title'] ?? '';
+        $showHeader = $this->toBool($options['header'] ?? true);
+
+        // Clean up the content
+        $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $code = trim($code, "\n\r");
+
+        if (empty(trim($code))) {
+            return '';
+        }
+
+        try {
+            $phiki = $this->getPhiki();
+            $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
+
+            // Add 'no-highlight' class to prevent Prism.js from reprocessing
+            $output = $output->decoration(
+                PreDecoration::make()->class('no-highlight')
+            );
+
+            // Add line numbers if enabled
+            if ($lineNumbers) {
+                $output = $output->withGutter();
+                if ($startLine !== 1) {
+                    $output = $output->startingLine($startLine);
+                }
+            }
+
+            // Add line decorations for highlighting
+            if (!empty($highlight)) {
+                $highlightLines = $this->parseLineSpec($highlight);
+                foreach ($highlightLines as $line) {
+                    $output = $output->decoration(
+                        \Phiki\Transformers\Decorations\LineDecoration::forLine($line - 1)->class('highlight')
+                    );
+                }
+            }
+
+            // Add line decorations for focus
+            if (!empty($focus)) {
+                $focusLines = $this->parseLineSpec($focus);
+                foreach ($focusLines as $line) {
+                    $output = $output->decoration(
+                        \Phiki\Transformers\Decorations\LineDecoration::forLine($line - 1)->class('focus')
+                    );
+                }
+            }
+
+            $html = $output->toString();
+
+            // Wrap in container with optional class
+            $classes = ['codesh-block'];
+            if (is_array($theme)) {
+                $classes[] = 'codesh-dual-theme';
+            }
+            if (!empty($class)) {
+                $classes[] = htmlspecialchars($class);
+            }
+            if (!empty($highlight)) {
+                $classes[] = 'has-highlights';
+            }
+            if (!empty($focus)) {
+                $classes[] = 'has-focus';
+            }
+            if (!$showHeader) {
+                $classes[] = 'no-header';
+            }
+
+            // Build the complete HTML output
+            $result = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
+
+            // Add header with language/title and copy button
+            if ($showHeader) {
+                $result .= '<div class="codesh-header">';
+
+                // Display title or language
+                if (!empty($title)) {
+                    $result .= '<span class="codesh-title">' . htmlspecialchars($title) . '</span>';
+                } elseif ($showLang && !empty($lang)) {
+                    $result .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
+                } else {
+                    $result .= '<span class="codesh-lang"></span>';
+                }
+
+                // Copy button
+                $result .= '<button class="codesh-copy" type="button" title="Copy code">';
+                $result .= '<svg class="codesh-copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">';
+                $result .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+                $result .= '</svg>';
+                $result .= '<span class="codesh-copy-text">Copy</span>';
+                $result .= '</button>';
+
+                $result .= '</div>';
+            }
+
+            // Add the code
+            $result .= '<div class="codesh-code">' . $html . '</div>';
+            $result .= '</div>';
+
+            return $result;
+
+        } catch (\Exception $e) {
+            // Fallback to plain text on error
+            return '<div class="codesh-block codesh-error" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
+        }
+    }
+
+    /**
+     * Parse line specification like "1,3-5,7" into array of line numbers
+     */
+    protected function parseLineSpec(string $spec): array
+    {
+        $lines = [];
+        $parts = explode(',', $spec);
+
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if (empty($part)) {
+                continue;
+            }
+
+            if (str_contains($part, '-')) {
+                [$start, $end] = explode('-', $part, 2);
+                $start = (int) trim($start);
+                $end = (int) trim($end);
+                if ($start > 0 && $end >= $start) {
+                    for ($i = $start; $i <= $end; $i++) {
+                        $lines[] = $i;
+                    }
+                }
+            } else {
+                $lineNum = (int) $part;
+                if ($lineNum > 0) {
+                    $lines[] = $lineNum;
+                }
+            }
+        }
+
+        return array_unique($lines);
+    }
+
+    /**
+     * Convert various values to boolean
+     */
+    protected function toBool($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            return in_array(strtolower($value), ['true', '1', 'yes', 'on'], true);
+        }
+        return (bool) $value;
     }
 
     /**
