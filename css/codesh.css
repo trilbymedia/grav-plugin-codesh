@@ -1,14 +1,88 @@
-/* Codesh - Code Syntax Highlighter Styles */
+/* ===================================
+   CODESH - Code Syntax Highlighter
+   Complete standalone styles
+   =================================== */
 
+/* Main container */
 .codesh-block {
     position: relative;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    background-color: #1f2937;
+}
+
+/* Header bar */
+.codesh-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 1rem;
+    background-color: rgba(55, 65, 81, 0.5);
+    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+/* Language badge */
+.codesh-lang {
+    font-size: 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(75, 85, 99, 0.5);
+    border-radius: 0.25rem;
+}
+
+/* Title/filename display */
+.codesh-title {
+    font-size: 0.875rem;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color: #d1d5db;
+}
+
+/* Copy button */
+.codesh-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #d1d5db;
+    background-color: rgba(75, 85, 99, 0.8);
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.codesh-copy:hover {
+    background-color: rgba(107, 114, 128, 0.8);
+    color: #ffffff;
+    border-color: rgba(156, 163, 175, 0.5);
+}
+
+.codesh-copy.copied {
+    background-color: rgba(34, 197, 94, 0.9);
+    color: #ffffff;
+    border-color: rgba(34, 197, 94, 0.8);
+}
+
+.codesh-copy-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Code container */
+.codesh-code {
+    overflow-x: auto;
 }
 
 .codesh-block pre {
     margin: 0;
     padding: 1rem;
-    border-radius: 0.5rem;
     overflow-x: auto;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     font-size: 0.875rem;
@@ -23,14 +97,21 @@
     padding: 0;
 }
 
-/* Line styles */
+/* No header mode - minimal styling */
+.codesh-block.no-header {
+    border-radius: 0.5rem;
+}
+
+/* ===================================
+   LINE STYLES
+   =================================== */
 .codesh-block .line {
     display: block;
     padding: 0 0.5rem;
     margin: 0 -0.5rem;
 }
 
-/* Line number styles - Phiki uses 'line-number' class */
+/* Line numbers - Phiki uses 'line-number' class */
 .codesh-block .line-number {
     display: inline-block;
     width: 2.5em;
@@ -43,18 +124,21 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Highlighted lines */
+/* ===================================
+   LINE HIGHLIGHTING
+   =================================== */
 .codesh-block .line.highlight {
     background-color: rgba(250, 200, 50, 0.15);
     box-shadow: inset 3px 0 0 0 #d19a00;
 }
 
-/* Ensure line numbers stay visible in highlighted lines */
 .codesh-block .line.highlight .line-number {
     opacity: 0.6;
 }
 
-/* Focused lines - dim non-focused lines */
+/* ===================================
+   LINE FOCUS
+   =================================== */
 .codesh-block.has-focus .line:not(.focus) {
     opacity: 0.35;
 }
@@ -64,18 +148,21 @@
     box-shadow: inset 3px 0 0 0 #3b82f6;
 }
 
-/* Ensure line numbers stay visible in focused lines */
 .codesh-block .line.focus .line-number {
     opacity: 0.6;
 }
 
-/* Error fallback */
+/* ===================================
+   ERROR FALLBACK
+   =================================== */
 .codesh-block.codesh-error pre {
     background-color: #1e1e1e;
     color: #d4d4d4;
 }
 
-/* Scrollbar styling for code blocks */
+/* ===================================
+   SCROLLBAR STYLING
+   =================================== */
 .codesh-block pre::-webkit-scrollbar {
     height: 8px;
     width: 8px;
@@ -92,4 +179,15 @@
 
 .codesh-block pre::-webkit-scrollbar-thumb:hover {
     background: rgba(128, 128, 128, 0.5);
+}
+
+/* ===================================
+   DIFF LANGUAGE STYLING
+   =================================== */
+.codesh-block .line .deleted {
+    color: #f87171;
+}
+
+.codesh-block .line .inserted {
+    color: #4ade80;
 }

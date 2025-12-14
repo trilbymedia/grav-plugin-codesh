@@ -55,10 +55,11 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Add CSS assets
+     * Add CSS and JS assets
      */
     public function onTwigSiteVariables(): void
     {
         $this->grav['assets']->addCss('plugin://codesh/css/codesh.css');
+        $this->grav['assets']->addJs('plugin://codesh/js/codesh.js', ['group' => 'bottom', 'defer' => true]);
     }
 }

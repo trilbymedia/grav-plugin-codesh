@@ -113,20 +113,42 @@ class CodeshShortcode extends Shortcode
             if (!empty($focus)) {
                 $classes[] = 'has-focus';
             }
-
-            // Build data attributes
-            $dataAttrs = 'data-language="' . htmlspecialchars($lang) . '"';
             if (!$showHeader) {
-                $dataAttrs .= ' data-hide-header="true"';
-            }
-            if (!$showLang) {
-                $dataAttrs .= ' data-hide-lang="true"';
-            }
-            if (!empty($title)) {
-                $dataAttrs .= ' data-title="' . htmlspecialchars($title) . '"';
+                $classes[] = 'no-header';
             }
 
-            return '<div class="' . implode(' ', $classes) . '" ' . $dataAttrs . '>' . $html . '</div>';
+            // Build the complete HTML output
+            $output = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
+
+            // Add header with language/title and copy button
+            if ($showHeader) {
+                $output .= '<div class="codesh-header">';
+
+                // Display title or language
+                if (!empty($title)) {
+                    $output .= '<span class="codesh-title">' . htmlspecialchars($title) . '</span>';
+                } elseif ($showLang && !empty($lang)) {
+                    $output .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
+                } else {
+                    $output .= '<span class="codesh-lang"></span>';
+                }
+
+                // Copy button
+                $output .= '<button class="codesh-copy" type="button" title="Copy code">';
+                $output .= '<svg class="codesh-copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">';
+                $output .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+                $output .= '</svg>';
+                $output .= '<span class="codesh-copy-text">Copy</span>';
+                $output .= '</button>';
+
+                $output .= '</div>';
+            }
+
+            // Add the code
+            $output .= '<div class="codesh-code">' . $html . '</div>';
+            $output .= '</div>';
+
+            return $output;
 
         } catch (\Exception $e) {
             // Fallback to plain text on error
