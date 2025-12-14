@@ -35,36 +35,67 @@ class CodeshShortcode extends Shortcode
      */
     protected function process(ShortcodeInterface $sc): string
     {
+        return $this->highlight(
+            $sc->getContent() ?? '',
+            $sc->getParameter('lang', $sc->getBbCode() ?? 'txt'),
+            [
+                'theme' => $sc->getParameter('theme'),
+                'line-numbers' => $sc->getParameter('line-numbers', $sc->getParameter('linenumbers')),
+                'start' => $sc->getParameter('start', $sc->getParameter('start-line')),
+                'highlight' => $sc->getParameter('highlight', $sc->getParameter('hl', '')),
+                'focus' => $sc->getParameter('focus', ''),
+                'class' => $sc->getParameter('class', ''),
+                'show-lang' => $sc->getParameter('show-lang', $sc->getParameter('showlang')),
+                'title' => $sc->getParameter('title', ''),
+                'header' => $sc->getParameter('header'),
+            ]
+        );
+    }
+
+    /**
+     * Highlight code with Phiki
+     *
+     * @param string $content The code to highlight
+     * @param string $lang The language
+     * @param array $options Options (theme, line-numbers, start, highlight, focus, class, show-lang, title, header)
+     * @return string The highlighted HTML
+     */
+    public function highlight(string $content, string $lang = 'txt', array $options = []): string
+    {
         $config = $this->config->get('plugins.codesh');
 
-        // Get parameters - support both BBCode style [codesh=php] and attribute style [codesh lang="php"]
-        $lang = $sc->getParameter('lang', $sc->getBbCode() ?? 'txt');
+        // Detect theme mode from Helios theme config
+        $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
-        // Mode determines both chrome styling and default theme
-        $mode = $sc->getParameter('mode', $config['mode'] ?? 'dark');
+        $themeDark = $config['theme_dark'] ?? 'github-dark';
+        $themeLight = $config['theme_light'] ?? 'github-light';
 
-        // Get theme - explicit theme parameter overrides mode-based theme
-        $explicitTheme = $sc->getParameter('theme');
+        // Get theme - explicit theme parameter overrides mode-based themes
+        $explicitTheme = $options['theme'] ?? null;
         if ($explicitTheme) {
+            // Explicit theme - use single theme
             $theme = $explicitTheme;
+        } elseif ($themeConfig === 'system') {
+            // System mode - use dual themes with CSS variable switching
+            $theme = [
+                'light' => $themeLight,
+                'dark' => $themeDark,
+            ];
         } else {
-            // Use mode-appropriate theme from config
-            $theme = ($mode === 'light')
-                ? ($config['theme_light'] ?? 'github-light')
-                : ($config['theme_dark'] ?? 'github-dark');
+            // Explicit light or dark mode - use single theme
+            $theme = ($themeConfig === 'dark') ? $themeDark : $themeLight;
         }
 
-        $lineNumbers = $this->toBool($sc->getParameter('line-numbers', $sc->getParameter('linenumbers', $config['show_line_numbers'] ?? false)));
-        $startLine = (int) $sc->getParameter('start', $sc->getParameter('start-line', 1));
-        $highlight = $sc->getParameter('highlight', $sc->getParameter('hl', ''));
-        $focus = $sc->getParameter('focus', '');
-        $class = $sc->getParameter('class', '');
-        $showLang = $this->toBool($sc->getParameter('show-lang', $sc->getParameter('showlang', true)));
-        $title = $sc->getParameter('title', '');
-        $showHeader = $this->toBool($sc->getParameter('header', true));
+        $lineNumbers = $this->toBool($options['line-numbers'] ?? $config['show_line_numbers'] ?? false);
+        $startLine = (int) ($options['start'] ?? 1);
+        $highlight = $options['highlight'] ?? '';
+        $focus = $options['focus'] ?? '';
+        $class = $options['class'] ?? '';
+        $showLang = $this->toBool($options['show-lang'] ?? true);
+        $title = $options['title'] ?? '';
+        $showHeader = $this->toBool($options['header'] ?? true);
 
         // Get code content - handle markdown fenced code blocks
-        $content = $sc->getContent() ?? '';
         $content = $this->extractCodeFromMarkdown($content, $lang);
 
         // Clean up the content
@@ -118,7 +149,9 @@ class CodeshShortcode extends Shortcode
 
             // Wrap in container with optional class
             $classes = ['codesh-block'];
-            $classes[] = 'codesh-' . $mode; // Add mode class (codesh-dark or codesh-light)
+            if (is_array($theme)) {
+                $classes[] = 'codesh-dual-theme';
+            }
             if (!empty($class)) {
                 $classes[] = htmlspecialchars($class);
             }
@@ -257,4 +290,5 @@ class CodeshShortcode extends Shortcode
         }
         return (bool) $value;
     }
+
 }

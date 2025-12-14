@@ -13,82 +13,101 @@
 }
 
 /* ===================================
-   DARK MODE (default)
+   LIGHT MODE (default)
    =================================== */
-.codesh-block.codesh-dark {
-    background-color: #1f2937;
-}
-
-.codesh-dark .codesh-header {
-    background-color: rgba(55, 65, 81, 0.5);
-    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
-}
-
-.codesh-dark .codesh-lang {
-    color: #9ca3af;
-    background-color: rgba(75, 85, 99, 0.5);
-}
-
-.codesh-dark .codesh-title {
-    color: #d1d5db;
-}
-
-.codesh-dark .codesh-copy {
-    color: #d1d5db;
-    background-color: rgba(75, 85, 99, 0.8);
-    border-color: rgba(107, 114, 128, 0.5);
-}
-
-.codesh-dark .codesh-copy:hover {
-    background-color: rgba(107, 114, 128, 0.8);
-    color: #ffffff;
-    border-color: rgba(156, 163, 175, 0.5);
-}
-
-.codesh-dark .codesh-copy.copied {
-    background-color: rgba(34, 197, 94, 0.9);
-    color: #ffffff;
-    border-color: rgba(34, 197, 94, 0.8);
-}
-
-/* ===================================
-   LIGHT MODE
-   =================================== */
-.codesh-block.codesh-light {
+.codesh-block {
     background-color: #f3f4f6;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 }
 
-.codesh-light .codesh-header {
+.codesh-block .codesh-header {
     background-color: rgba(229, 231, 235, 0.8);
     border-bottom: 1px solid rgba(209, 213, 219, 0.5);
 }
 
-.codesh-light .codesh-lang {
+.codesh-block .codesh-lang {
     color: #4b5563;
     background-color: rgba(209, 213, 219, 0.7);
 }
 
-.codesh-light .codesh-title {
+.codesh-block .codesh-title {
     color: #374151;
 }
 
-.codesh-light .codesh-copy {
+.codesh-block .codesh-copy {
     color: #4b5563;
     background-color: rgba(209, 213, 219, 0.8);
     border-color: rgba(156, 163, 175, 0.5);
 }
 
-.codesh-light .codesh-copy:hover {
+.codesh-block .codesh-copy:hover {
     background-color: rgba(156, 163, 175, 0.8);
     color: #111827;
     border-color: rgba(107, 114, 128, 0.5);
 }
 
-.codesh-light .codesh-copy.copied {
+.codesh-block .codesh-copy.copied {
     background-color: rgba(34, 197, 94, 0.9);
     color: #ffffff;
     border-color: rgba(34, 197, 94, 0.8);
+}
+
+/* Light mode diff colors */
+.codesh-block .line .deleted {
+    color: #dc2626;
+}
+
+.codesh-block .line .inserted {
+    color: #16a34a;
+}
+
+/* ===================================
+   DARK MODE (via .dark ancestor - Tailwind style)
+   =================================== */
+.dark .codesh-block {
+    background-color: #1f2937;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .codesh-block .codesh-header {
+    background-color: rgba(55, 65, 81, 0.5);
+    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.dark .codesh-block .codesh-lang {
+    color: #9ca3af;
+    background-color: rgba(75, 85, 99, 0.5);
+}
+
+.dark .codesh-block .codesh-title {
+    color: #d1d5db;
+}
+
+.dark .codesh-block .codesh-copy {
+    color: #d1d5db;
+    background-color: rgba(75, 85, 99, 0.8);
+    border-color: rgba(107, 114, 128, 0.5);
+}
+
+.dark .codesh-block .codesh-copy:hover {
+    background-color: rgba(107, 114, 128, 0.8);
+    color: #ffffff;
+    border-color: rgba(156, 163, 175, 0.5);
+}
+
+.dark .codesh-block .codesh-copy.copied {
+    background-color: rgba(34, 197, 94, 0.9);
+    color: #ffffff;
+    border-color: rgba(34, 197, 94, 0.8);
+}
+
+/* Dark mode diff colors */
+.dark .codesh-block .line .deleted {
+    color: #f87171;
+}
+
+.dark .codesh-block .line .inserted {
+    color: #4ade80;
 }
 
 /* ===================================
@@ -141,6 +160,30 @@
 /* Code container */
 .codesh-code {
     overflow-x: auto;
+}
+
+/* ===================================
+   PHIKI DUAL THEME SUPPORT
+   Switch between light/dark themes via CSS variables
+   Only applies to blocks with codesh-dual-theme class
+   =================================== */
+.dark .codesh-dual-theme .shiki,
+.dark .codesh-dual-theme .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* Also support phiki-prefixed variables if used */
+.dark .codesh-dual-theme .phiki,
+.dark .codesh-dual-theme .phiki span {
+    color: var(--phiki-dark-color) !important;
+    background-color: var(--phiki-dark-background-color) !important;
+    font-style: var(--phiki-dark-font-style) !important;
+    font-weight: var(--phiki-dark-font-weight) !important;
+    text-decoration: var(--phiki-dark-text-decoration) !important;
 }
 
 .codesh-block pre {
@@ -242,24 +285,4 @@
 
 .codesh-block pre::-webkit-scrollbar-thumb:hover {
     background: rgba(128, 128, 128, 0.5);
-}
-
-/* ===================================
-   DIFF LANGUAGE STYLING
-   =================================== */
-.codesh-block .line .deleted {
-    color: #f87171;
-}
-
-.codesh-block .line .inserted {
-    color: #4ade80;
-}
-
-/* Light mode diff colors */
-.codesh-light .line .deleted {
-    color: #dc2626;
-}
-
-.codesh-light .line .inserted {
-    color: #16a34a;
 }

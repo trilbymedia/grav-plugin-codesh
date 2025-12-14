@@ -4,6 +4,8 @@ namespace Grav\Plugin;
 
 use Composer\Autoload\ClassLoader;
 use Grav\Common\Plugin;
+use Phiki\Phiki;
+use Phiki\Transformers\Decorations\PreDecoration;
 use RocketTheme\Toolbox\Event\Event;
 
 class CodeshPlugin extends Plugin
@@ -43,6 +45,7 @@ class CodeshPlugin extends Plugin
         $this->enable([
             'onShortcodeHandlers' => ['onShortcodeHandlers', 0],
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
+            'onPageContentProcessed' => ['onPageContentProcessed', 0],
         ]);
     }
 
@@ -61,5 +64,88 @@ class CodeshPlugin extends Plugin
     {
         $this->grav['assets']->addCss('plugin://codesh/css/codesh.css');
         $this->grav['assets']->addJs('plugin://codesh/js/codesh.js', ['group' => 'bottom', 'defer' => true]);
+    }
+
+    /**
+     * Process markdown code blocks after page content is processed
+     */
+    public function onPageContentProcessed(Event $e): void
+    {
+        $config = $this->config->get('plugins.codesh');
+
+        // Check if markdown processing is enabled
+        if (!($config['process_markdown'] ?? true)) {
+            return;
+        }
+
+        $page = $e['page'];
+        $content = $page->getRawContent();
+
+        // Skip if no code blocks or already processed by codesh
+        if (strpos($content, '<pre><code') === false || strpos($content, 'codesh-block') !== false) {
+            return;
+        }
+
+        // Process markdown code blocks: <pre><code class="language-xxx">...</code></pre>
+        $content = preg_replace_callback(
+            '/<pre><code class="language-([^"]+)">(.*?)<\/code><\/pre>/s',
+            function ($matches) use ($config) {
+                $lang = $matches[1];
+                $code = $matches[2];
+
+                // Decode HTML entities back to original code
+                $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return $this->highlightCode($code, $lang, $config);
+            },
+            $content
+        );
+
+        $page->setRawContent($content);
+    }
+
+    /**
+     * Highlight code using Phiki
+     */
+    protected function highlightCode(string $code, string $lang, array $config): string
+    {
+        // Detect theme mode from Helios theme config
+        $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
+
+        $themeDark = $config['theme_dark'] ?? 'github-dark';
+        $themeLight = $config['theme_light'] ?? 'github-light';
+
+        // Determine theme(s) to use
+        if ($themeConfig === 'system') {
+            // System mode - use dual themes with CSS variable switching
+            $theme = [
+                'light' => $themeLight,
+                'dark' => $themeDark,
+            ];
+        } else {
+            // Explicit light or dark mode - use single theme
+            $theme = ($themeConfig === 'dark') ? $themeDark : $themeLight;
+        }
+
+        try {
+            $phiki = new Phiki();
+            $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
+
+            // Add 'no-highlight' class to prevent Prism.js from reprocessing
+            $output = $output->decoration(PreDecoration::make()->class('no-highlight'));
+
+            $html = $output->toString();
+
+            // Add dual-theme class when using CSS variable switching
+            $dualClass = is_array($theme) ? ' codesh-dual-theme' : '';
+
+            return '<div class="codesh-block no-header' . $dualClass . '" data-language="' . htmlspecialchars($lang) . '">'
+                . '<div class="codesh-code">' . $html . '</div>'
+                . '</div>';
+
+        } catch (\Exception $e) {
+            // Fallback to original on error
+            return '<div class="codesh-block codesh-error no-header"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
+        }
     }
 }
