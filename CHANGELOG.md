@@ -1,3 +1,11 @@
+# v1.0.1
+## 12/14/2024
+
+1. [](#improved)
+   * Fixed blueprints
+   * Fixed copy button on code groups
+   * Fixed empty badge when `show-lang` is disabled 
+
 # v1.0.0
 ## 12/14/2024
 
