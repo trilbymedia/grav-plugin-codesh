@@ -201,7 +201,7 @@ class CodeshShortcode extends Shortcode
                 } elseif ($showLang && !empty($lang)) {
                     $output .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
                 } else {
-                    $output .= '<span class="codesh-lang"></span>';
+                    $output .= '<span></span>';
                 }
 
                 // Copy button

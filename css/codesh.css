@@ -34,19 +34,22 @@
     color: #374151;
 }
 
-.codesh-block .codesh-copy {
+.codesh-block .codesh-copy,
+.codesh-group .codesh-copy {
     color: #4b5563;
     background-color: rgba(209, 213, 219, 0.4);
     border-color: rgba(156, 163, 175, 0.2);
 }
 
-.codesh-block .codesh-copy:hover {
+.codesh-block .codesh-copy:hover,
+.codesh-group .codesh-copy:hover {
     background-color: rgba(156, 163, 175, 0.2);
     color: #111827;
     border-color: rgba(107, 114, 128, 0.2);
 }
 
-.codesh-block .codesh-copy.copied {
+.codesh-block .codesh-copy.copied,
+.codesh-group .codesh-copy.copied {
     background-color: rgba(34, 197, 94, 0.9);
     color: #ffffff;
     border-color: rgba(34, 197, 94, 0.8);
@@ -84,19 +87,22 @@
     color: #d4d4d8;
 }
 
-.dark .codesh-block .codesh-copy {
+.dark .codesh-block .codesh-copy,
+.dark .codesh-group .codesh-copy {
     color: #d4d4d8;
     background-color: rgba(51, 51, 55, 0.9);
     border-color: rgba(63, 63, 70, 0.5);
 }
 
-.dark .codesh-block .codesh-copy:hover {
+.dark .codesh-block .codesh-copy:hover,
+.dark .codesh-group .codesh-copy:hover {
     background-color: rgba(63, 63, 70, 0.8);
     color: #ffffff;
     border-color: rgba(82, 82, 91, 0.5);
 }
 
-.dark .codesh-block .codesh-copy.copied {
+.dark .codesh-block .codesh-copy.copied,
+.dark .codesh-group .codesh-copy.clpied {
     background-color: rgba(34, 197, 94, 0.9);
     color: #ffffff;
     border-color: rgba(34, 197, 94, 0.8);
@@ -376,32 +382,6 @@
 .dark .codesh-group-tab.active {
     color: #f4f4f5;
     border-bottom-color: #3b82f6;
-}
-
-/* Copy button in group header */
-.codesh-group-header .codesh-copy {
-    color: #4b5563;
-    background-color: rgba(209, 213, 219, 0.8);
-    border-color: rgba(156, 163, 175, 0.5);
-    flex-shrink: 0;
-}
-
-.codesh-group-header .codesh-copy:hover {
-    background-color: rgba(156, 163, 175, 0.8);
-    color: #111827;
-    border-color: rgba(107, 114, 128, 0.5);
-}
-
-.dark .codesh-group-header .codesh-copy {
-    color: #d4d4d8;
-    background-color: rgba(39, 39, 42, 0.9);
-    border-color: rgba(63, 63, 70, 0.5);
-}
-
-.dark .codesh-group-header .codesh-copy:hover {
-    background-color: rgba(63, 63, 70, 0.8);
-    color: #ffffff;
-    border-color: rgba(82, 82, 91, 0.5);
 }
 
 /* Tab panels container */
