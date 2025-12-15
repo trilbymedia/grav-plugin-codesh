@@ -14,19 +14,50 @@ class CodeshShortcode extends Shortcode
     protected ?Phiki $phiki = null;
 
     /**
-     * Get Phiki instance with custom themes registered
+     * Get Phiki instance with custom themes and grammars registered
      */
     protected function getPhiki(): Phiki
     {
         if ($this->phiki === null) {
             $this->phiki = new Phiki();
+            $pluginDir = dirname(__DIR__, 2);
 
             // Register custom themes from plugin's themes directory
-            $themesDir = dirname(__DIR__, 2) . '/themes';
+            $themesDir = $pluginDir . '/themes';
             if (is_dir($themesDir)) {
                 foreach (glob($themesDir . '/*.json') as $themeFile) {
                     $themeName = basename($themeFile, '.json');
                     $this->phiki->theme($themeName, $themeFile);
+                }
+            }
+
+            // Register user custom themes from data directory
+            $userThemesDir = $this->grav['locator']->findResource('user://data/codesh/themes', true);
+            if ($userThemesDir && is_dir($userThemesDir)) {
+                foreach (glob($userThemesDir . '/*.json') as $themeFile) {
+                    $themeName = basename($themeFile, '.json');
+                    $this->phiki->theme($themeName, $themeFile);
+                }
+            }
+
+            // Register custom grammars from plugin's grammars directory
+            $grammarsDir = $pluginDir . '/grammars';
+            $this->grav['log']->debug('CodeSh (shortcode): Looking for grammars in ' . $grammarsDir . ' (exists: ' . (is_dir($grammarsDir) ? 'yes' : 'no') . ')');
+            if (is_dir($grammarsDir)) {
+                $files = glob($grammarsDir . '/*.json');
+                $this->grav['log']->debug('CodeSh (shortcode): Found ' . count($files) . ' grammar files');
+                foreach ($files as $grammarFile) {
+                    $this->registerGrammarWithAliases($grammarFile);
+                }
+            } else {
+                $this->grav['log']->warning('CodeSh (shortcode): Grammars directory not found: ' . $grammarsDir);
+            }
+
+            // Register user custom grammars from data directory
+            $userGrammarsDir = $this->grav['locator']->findResource('user://data/codesh/grammars', true);
+            if ($userGrammarsDir && is_dir($userGrammarsDir)) {
+                foreach (glob($userGrammarsDir . '/*.json') as $grammarFile) {
+                    $this->registerGrammarWithAliases($grammarFile);
                 }
             }
         }
@@ -34,8 +65,38 @@ class CodeshShortcode extends Shortcode
         return $this->phiki;
     }
 
+    /**
+     * Register a grammar file with Phiki, including aliases from fileTypes
+     */
+    protected function registerGrammarWithAliases(string $grammarFile): void
+    {
+        $grammarSlug = basename($grammarFile, '.json');
+        $this->grav['log']->debug('CodeSh (shortcode): Registering grammar "' . $grammarSlug . '" from ' . $grammarFile);
+        $this->phiki->grammar($grammarSlug, $grammarFile);
+
+        // Also register aliases from fileTypes array
+        $content = file_get_contents($grammarFile);
+        $data = json_decode($content, true);
+
+        if ($data && isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+            foreach ($data['fileTypes'] as $alias) {
+                // Skip if alias is same as slug or conflicts with common extensions
+                if ($alias !== $grammarSlug && !in_array($alias, ['md', 'txt', 'json', 'html', 'css', 'js'])) {
+                    $this->grav['log']->debug('CodeSh (shortcode): Registering grammar alias "' . $alias . '" for ' . $grammarSlug);
+                    $this->phiki->grammar($alias, $grammarFile);
+                }
+            }
+        }
+    }
+
     public function init(): void
     {
+        // Debug: Write to file to confirm this code is running
+        file_put_contents('/tmp/codesh_debug.txt', date('Y-m-d H:i:s') . " - init() called\n", FILE_APPEND);
+
+        // Debug: Log that init was called
+        $this->grav['log']->info('CodeSh: CodeshShortcode init() called - registering handlers');
+
         $handler = function (ShortcodeInterface $sc) {
             return $this->process($sc);
         };
@@ -58,6 +119,13 @@ class CodeshShortcode extends Shortcode
      */
     protected function process(ShortcodeInterface $sc): string
     {
+        // Debug: Write to file to confirm process() is called
+        $lang = $sc->getParameter('lang', $sc->getBbCode() ?? 'txt');
+        file_put_contents('/tmp/codesh_debug.txt', date('Y-m-d H:i:s') . " - process() called with lang={$lang}\n", FILE_APPEND);
+
+        // Debug: Log that process was called
+        $this->grav['log']->info('CodeSh: process() called with lang="' . $lang . '"');
+
         return $this->highlight(
             $sc->getContent() ?? '',
             $sc->getParameter('lang', $sc->getBbCode() ?? 'txt'),
@@ -85,6 +153,12 @@ class CodeshShortcode extends Shortcode
      */
     public function highlight(string $content, string $lang = 'txt', array $options = []): string
     {
+        // Debug: Write to file to confirm highlight() is called
+        file_put_contents('/tmp/codesh_debug.txt', date('Y-m-d H:i:s') . " - highlight() called with lang={$lang}, content_len=" . strlen($content) . "\n", FILE_APPEND);
+
+        // Debug: Log that highlight was called
+        $this->grav['log']->debug('CodeSh highlight() called with lang="' . $lang . '", content length=' . strlen($content));
+
         $config = $this->config->get('plugins.codesh');
 
         // Detect theme mode from Helios theme config
@@ -132,6 +206,10 @@ class CodeshShortcode extends Shortcode
         try {
             // Get Phiki instance with custom themes registered
             $phiki = $this->getPhiki();
+
+            // Debug log
+            $this->grav['log']->debug('CodeSh: Attempting to highlight lang="' . $lang . '"');
+
             $output = $phiki->codeToHtml($content, strtolower($lang), $theme);
 
             // Add 'no-highlight' class to prevent Prism.js from reprocessing
@@ -222,6 +300,9 @@ class CodeshShortcode extends Shortcode
             return $output;
 
         } catch (\Exception $e) {
+            // Log the error for debugging
+            $this->grav['log']->error('CodeSh error for lang "' . $lang . '": ' . $e->getMessage());
+
             // Fallback to plain text on error
             return '<div class="codesh-block codesh-error" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($content) . '</code></pre></div>';
         }

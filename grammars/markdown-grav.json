@@ -1,7 +1,7 @@
 {
   "name": "Markdown (Grav)",
   "scopeName": "text.html.markdown.grav",
-  "fileTypes": ["md", "grav"],
+  "fileTypes": ["grav"],
   "patterns": [
     {
       "include": "#frontmatter"
@@ -13,13 +13,16 @@
       "include": "#shortcodes"
     },
     {
+      "include": "#markdown-with-twig"
+    },
+    {
       "include": "text.html.markdown"
     }
   ],
   "repository": {
     "frontmatter": {
       "name": "meta.frontmatter.yaml.grav",
-      "begin": "\\A---\\s*$",
+      "begin": "^---\\s*$",
       "end": "^---\\s*$",
       "beginCaptures": {
         "0": { "name": "punctuation.definition.frontmatter.begin.grav" }
@@ -28,8 +31,166 @@
         "0": { "name": "punctuation.definition.frontmatter.end.grav" }
       },
       "patterns": [
+        { "include": "#yaml-content" }
+      ]
+    },
+    "yaml-content": {
+      "patterns": [
         {
-          "include": "source.yaml"
+          "comment": "YAML comment",
+          "name": "comment.line.number-sign.yaml",
+          "match": "#.*$"
+        },
+        {
+          "comment": "YAML key with double-quoted value",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*(\"[^\"]*\")\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" },
+            "4": { "name": "string.quoted.double.yaml" }
+          }
+        },
+        {
+          "comment": "YAML key with single-quoted value",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*('[^']*')\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" },
+            "4": { "name": "string.quoted.single.yaml" }
+          }
+        },
+        {
+          "comment": "YAML key with boolean value",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*(true|false|yes|no|on|off)\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" },
+            "4": { "name": "constant.language.boolean.yaml" }
+          }
+        },
+        {
+          "comment": "YAML key with null value",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*(null|~)?\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" },
+            "4": { "name": "constant.language.null.yaml" }
+          }
+        },
+        {
+          "comment": "YAML key with numeric value",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*(-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?)\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" },
+            "4": { "name": "constant.numeric.yaml" }
+          }
+        },
+        {
+          "comment": "YAML key with unquoted string value (fallback)",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*(.+?)\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" },
+            "4": { "name": "string.unquoted.yaml" }
+          }
+        },
+        {
+          "comment": "YAML key only (no value)",
+          "match": "^(\\s*)([a-zA-Z_][a-zA-Z0-9_-]*)(:)\\s*$",
+          "captures": {
+            "2": { "name": "entity.name.tag.yaml" },
+            "3": { "name": "punctuation.separator.key-value.yaml" }
+          }
+        },
+        {
+          "comment": "YAML list item",
+          "match": "^(\\s*)(-)\\s*(.*)$",
+          "captures": {
+            "2": { "name": "punctuation.definition.block.sequence.item.yaml" },
+            "3": { "name": "string.unquoted.yaml" }
+          }
+        }
+      ]
+    },
+    "markdown-with-twig": {
+      "patterns": [
+        {
+          "comment": "Markdown heading with possible Twig",
+          "name": "markup.heading.markdown.grav",
+          "begin": "^(#{1,6})\\s+",
+          "end": "$",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.heading.markdown" }
+          },
+          "patterns": [
+            { "include": "#twig" },
+            { "include": "#shortcodes" }
+          ]
+        },
+        {
+          "comment": "Bold text with ** delimiters",
+          "name": "markup.bold.markdown.grav",
+          "begin": "\\*\\*",
+          "end": "\\*\\*",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.bold.begin.markdown" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.bold.end.markdown" }
+          },
+          "patterns": [
+            { "include": "#twig" },
+            { "include": "#shortcodes" }
+          ]
+        },
+        {
+          "comment": "Bold text with __ delimiters",
+          "name": "markup.bold.markdown.grav",
+          "begin": "__",
+          "end": "__",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.bold.begin.markdown" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.bold.end.markdown" }
+          },
+          "patterns": [
+            { "include": "#twig" },
+            { "include": "#shortcodes" }
+          ]
+        },
+        {
+          "comment": "Italic text with * delimiter",
+          "name": "markup.italic.markdown.grav",
+          "begin": "(?<!\\*)\\*(?!\\*)",
+          "end": "\\*",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.italic.begin.markdown" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.italic.end.markdown" }
+          },
+          "patterns": [
+            { "include": "#twig" },
+            { "include": "#shortcodes" }
+          ]
+        },
+        {
+          "comment": "Italic text with _ delimiter",
+          "name": "markup.italic.markdown.grav",
+          "begin": "(?<!_)_(?!_)",
+          "end": "_",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.italic.begin.markdown" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.italic.end.markdown" }
+          },
+          "patterns": [
+            { "include": "#twig" },
+            { "include": "#shortcodes" }
+          ]
         }
       ]
     },
@@ -157,67 +318,45 @@
           "include": "#shortcode-self-closing"
         },
         {
-          "include": "#shortcode-block"
+          "include": "#shortcode-close"
+        },
+        {
+          "include": "#shortcode-open"
         }
       ]
     },
     "shortcode-self-closing": {
+      "comment": "Self-closing shortcode like [hr/] or [icon name='star'/]",
       "name": "meta.shortcode.self-closing.grav",
-      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)([^\\]]*?)(/\\])",
+      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)(.*?)(/\\])",
       "captures": {
-        "1": { "name": "punctuation.definition.shortcode.begin.grav" },
+        "1": { "name": "punctuation.definition.tag.begin.grav" },
         "2": { "name": "entity.name.tag.shortcode.grav" },
-        "3": { "patterns": [{ "include": "#shortcode-attributes" }] },
-        "4": { "name": "punctuation.definition.shortcode.end.grav" }
+        "3": { "name": "meta.shortcode.attributes.grav" },
+        "4": { "name": "punctuation.definition.tag.end.grav" }
       }
     },
-    "shortcode-block": {
-      "name": "meta.shortcode.block.grav",
-      "begin": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)([^\\]]*?)(\\])",
-      "end": "(\\[/)\\2(\\])",
-      "beginCaptures": {
-        "1": { "name": "punctuation.definition.shortcode.begin.grav" },
+    "shortcode-open": {
+      "comment": "Opening shortcode tag like [section] or [notice type='warning']",
+      "name": "meta.shortcode.open.grav",
+      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)((?:=[^\\s\\]]+)?)(.*?)(\\])",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.begin.grav" },
         "2": { "name": "entity.name.tag.shortcode.grav" },
-        "3": { "patterns": [{ "include": "#shortcode-attributes" }] },
-        "4": { "name": "punctuation.definition.shortcode.end.grav" }
-      },
-      "endCaptures": {
-        "1": { "name": "punctuation.definition.shortcode.begin.grav" },
-        "2": { "name": "entity.name.tag.shortcode.grav" },
-        "3": { "name": "punctuation.definition.shortcode.end.grav" }
-      },
-      "patterns": [
-        { "include": "#twig" },
-        { "include": "text.html.markdown" }
-      ]
+        "3": { "name": "string.unquoted.bbcode.grav" },
+        "4": { "name": "meta.shortcode.attributes.grav" },
+        "5": { "name": "punctuation.definition.tag.end.grav" }
+      }
     },
-    "shortcode-attributes": {
-      "patterns": [
-        {
-          "name": "entity.other.attribute-name.shortcode.grav",
-          "match": "\\b([a-zA-Z_][a-zA-Z0-9_-]*)\\s*(?==)"
-        },
-        {
-          "name": "string.quoted.double.shortcode.grav",
-          "begin": "\"",
-          "end": "\"",
-          "patterns": [
-            { "include": "#twig-output" }
-          ]
-        },
-        {
-          "name": "string.quoted.single.shortcode.grav",
-          "begin": "'",
-          "end": "'",
-          "patterns": [
-            { "include": "#twig-output" }
-          ]
-        },
-        {
-          "name": "string.unquoted.shortcode.grav",
-          "match": "(?<==)[^\\s\\]\"']+"
-        }
-      ]
+    "shortcode-close": {
+      "comment": "Closing shortcode tag like [/section]",
+      "name": "meta.shortcode.close.grav",
+      "match": "(\\[/)([a-zA-Z_][a-zA-Z0-9_-]*)(\\])",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.begin.grav" },
+        "2": { "name": "entity.name.tag.shortcode.grav" },
+        "3": { "name": "punctuation.definition.tag.end.grav" }
+      }
     }
   }
 }

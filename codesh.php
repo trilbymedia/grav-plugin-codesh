@@ -951,10 +951,15 @@ class CodeshPlugin extends Plugin
 
             // Register custom grammars from plugin's grammars directory
             $grammarsDir = __DIR__ . '/grammars';
+            $this->grav['log']->debug('CodeSh (main): Looking for grammars in ' . $grammarsDir . ' (exists: ' . (is_dir($grammarsDir) ? 'yes' : 'no') . ')');
             if (is_dir($grammarsDir)) {
-                foreach (glob($grammarsDir . '/*.json') as $grammarFile) {
+                $files = glob($grammarsDir . '/*.json');
+                $this->grav['log']->debug('CodeSh (main): Found ' . count($files) . ' grammar files');
+                foreach ($files as $grammarFile) {
                     $this->registerGrammarWithAliases($grammarFile);
                 }
+            } else {
+                $this->grav['log']->warning('CodeSh (main): Grammars directory not found: ' . $grammarsDir);
             }
 
             // Register user custom grammars from data directory
@@ -975,6 +980,7 @@ class CodeshPlugin extends Plugin
     protected function registerGrammarWithAliases(string $grammarFile): void
     {
         $grammarSlug = basename($grammarFile, '.json');
+        $this->grav['log']->debug('CodeSh: Registering grammar "' . $grammarSlug . '" from ' . $grammarFile);
         $this->phiki->grammar($grammarSlug, $grammarFile);
 
         // Also register aliases from fileTypes array
@@ -985,6 +991,7 @@ class CodeshPlugin extends Plugin
             foreach ($data['fileTypes'] as $alias) {
                 // Skip if alias is same as slug or conflicts with common extensions
                 if ($alias !== $grammarSlug && !in_array($alias, ['md', 'txt', 'json', 'html', 'css', 'js'])) {
+                    $this->grav['log']->debug('CodeSh: Registering grammar alias "' . $alias . '" for ' . $grammarSlug);
                     $this->phiki->grammar($alias, $grammarFile);
                 }
             }
@@ -1048,6 +1055,9 @@ class CodeshPlugin extends Plugin
      */
     protected function highlightCode(string $code, string $lang, array $config): string
     {
+        // Debug: Log the lang being requested
+        $this->grav['log']->debug('CodeSh (main): highlightCode() called with lang="' . $lang . '", content_len=' . strlen($code));
+
         // Detect theme mode from Helios theme config
         $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
@@ -1084,8 +1094,10 @@ class CodeshPlugin extends Plugin
                 . '</div>';
 
         } catch (\Exception $e) {
+            // Log the error
+            $this->grav['log']->error('CodeSh (main): Error highlighting lang="' . $lang . '": ' . $e->getMessage());
             // Fallback to original on error
-            return '<div class="codesh-block codesh-error no-header"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
+            return '<div class="codesh-block codesh-error no-header" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
         }
     }
 }
