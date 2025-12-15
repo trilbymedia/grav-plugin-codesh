@@ -5,13 +5,13 @@ version: 1.0.0
 description: Server-side syntax highlighting using Phiki with line numbers, line highlighting, and focus support
 icon: code
 author:
-  name: RocketTheme
-  email: support@rockettheme.com
-  url: https://rockettheme.com
-homepage: https://github.com/getgrav/grav-plugin-codesh
+  name: Trilby Media
+  email: hello@trilbymedia.com
+  url: https://trilby.media
+homepage: https://github.com/trilbymedia/grav-plugin-codesh
 keywords: grav, plugin, code, syntax, highlighting, phiki
-bugs: https://github.com/getgrav/grav-plugin-codesh/issues
-docs: https://github.com/getgrav/grav-plugin-codesh/blob/main/README.md
+bugs: https://github.com/trilbymedia/grav-plugin-codesh/issues
+docs: https://github.com/trilbymedia/grav-plugin-codesh/blob/main/README.md
 license: MIT
 
 dependencies:
