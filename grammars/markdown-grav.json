@@ -353,7 +353,7 @@
     "shortcode-self-closing": {
       "comment": "Self-closing shortcode with attributes like [icon name='star' /]",
       "name": "meta.shortcode.self-closing.grav",
-      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)(\\s[^\\]/]*)(\\s/\\])",
+      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)(\\s[^\\]]*?)(\\s?/\\])",
       "captures": {
         "1": { "name": "punctuation.definition.tag.begin.grav" },
         "2": { "name": "entity.name.tag.shortcode.grav" },
