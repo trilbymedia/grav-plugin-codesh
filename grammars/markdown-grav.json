@@ -13,13 +13,37 @@
       "include": "#shortcodes"
     },
     {
-      "include": "#markdown-with-twig"
+      "include": "#grav-bold"
     },
     {
-      "include": "text.html.markdown"
+      "include": "#markdown-with-twig"
     }
   ],
   "repository": {
+    "grav-bold": {
+      "patterns": [
+        {
+          "comment": "Bold text with ** delimiters",
+          "name": "markup.bold.markdown.grav",
+          "match": "(\\*\\*)([^*]+)(\\*\\*)",
+          "captures": {
+            "1": { "name": "punctuation.definition.bold.begin.markdown" },
+            "2": { "name": "markup.bold.text.markdown" },
+            "3": { "name": "punctuation.definition.bold.end.markdown" }
+          }
+        },
+        {
+          "comment": "Bold text with __ delimiters",
+          "name": "markup.bold.markdown.grav",
+          "match": "(__)([^_]+)(__)",
+          "captures": {
+            "1": { "name": "punctuation.definition.bold.begin.markdown" },
+            "2": { "name": "markup.bold.text.markdown" },
+            "3": { "name": "punctuation.definition.bold.end.markdown" }
+          }
+        }
+      ]
+    },
     "frontmatter": {
       "name": "meta.frontmatter.yaml.grav",
       "begin": "^---\\s*$",
@@ -129,36 +153,24 @@
           ]
         },
         {
-          "comment": "Bold text with ** delimiters",
+          "comment": "Bold text with ** delimiters - single line match",
           "name": "markup.bold.markdown.grav",
-          "begin": "\\*\\*",
-          "end": "\\*\\*",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.bold.begin.markdown" }
-          },
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.bold.end.markdown" }
-          },
-          "patterns": [
-            { "include": "#twig" },
-            { "include": "#shortcodes" }
-          ]
+          "match": "(\\*\\*)([^*]+)(\\*\\*)",
+          "captures": {
+            "1": { "name": "punctuation.definition.bold.begin.markdown" },
+            "2": { "name": "markup.bold.text.markdown" },
+            "3": { "name": "punctuation.definition.bold.end.markdown" }
+          }
         },
         {
-          "comment": "Bold text with __ delimiters",
+          "comment": "Bold text with __ delimiters - single line match",
           "name": "markup.bold.markdown.grav",
-          "begin": "__",
-          "end": "__",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.bold.begin.markdown" }
-          },
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.bold.end.markdown" }
-          },
-          "patterns": [
-            { "include": "#twig" },
-            { "include": "#shortcodes" }
-          ]
+          "match": "(__)([^_]+)(__)",
+          "captures": {
+            "1": { "name": "punctuation.definition.bold.begin.markdown" },
+            "2": { "name": "markup.bold.text.markdown" },
+            "3": { "name": "punctuation.definition.bold.end.markdown" }
+          }
         },
         {
           "comment": "Italic text with * delimiter",
@@ -315,6 +327,9 @@
     "shortcodes": {
       "patterns": [
         {
+          "include": "#shortcode-self-closing-simple"
+        },
+        {
           "include": "#shortcode-self-closing"
         },
         {
@@ -325,10 +340,20 @@
         }
       ]
     },
-    "shortcode-self-closing": {
-      "comment": "Self-closing shortcode like [hr/] or [icon name='star'/]",
+    "shortcode-self-closing-simple": {
+      "comment": "Self-closing shortcode without attributes like [hr/]",
       "name": "meta.shortcode.self-closing.grav",
-      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)(.*?)(/\\])",
+      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)(/\\])",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.begin.grav" },
+        "2": { "name": "entity.name.tag.shortcode.grav" },
+        "3": { "name": "punctuation.definition.tag.end.grav" }
+      }
+    },
+    "shortcode-self-closing": {
+      "comment": "Self-closing shortcode with attributes like [icon name='star' /]",
+      "name": "meta.shortcode.self-closing.grav",
+      "match": "(\\[)([a-zA-Z_][a-zA-Z0-9_-]*)(\\s[^\\]/]*)(\\s/\\])",
       "captures": {
         "1": { "name": "punctuation.definition.tag.begin.grav" },
         "2": { "name": "entity.name.tag.shortcode.grav" },
