@@ -60,7 +60,7 @@ class CodeshPlugin extends Plugin
         $this->enable([
             'onShortcodeHandlers' => ['onShortcodeHandlers', 0],
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
-            'onPageContentProcessed' => ['onPageContentProcessed', 0],
+            'onOutputGenerated' => ['onOutputGenerated', 0],
         ]);
     }
 
@@ -983,14 +983,31 @@ class CodeshPlugin extends Plugin
         $this->grav['log']->debug('CodeSh: Registering grammar "' . $grammarSlug . '" from ' . $grammarFile);
         $this->phiki->grammar($grammarSlug, $grammarFile);
 
-        // Also register aliases from fileTypes array
+        // Read grammar data for aliases and overrides
         $content = file_get_contents($grammarFile);
         $data = json_decode($content, true);
 
-        if ($data && isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+        if (!$data) {
+            return;
+        }
+
+        // Check for explicit overrides - these will replace built-in grammars
+        // Can be specified as "overrides": ["markdown", "md"] in the grammar JSON
+        if (isset($data['overrides']) && is_array($data['overrides'])) {
+            foreach ($data['overrides'] as $override) {
+                $this->grav['log']->debug('CodeSh: Overriding grammar "' . $override . '" with ' . $grammarSlug);
+                $this->phiki->grammar($override, $grammarFile);
+            }
+        }
+
+        // Also register aliases from fileTypes array
+        if (isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+            // Protected extensions that won't be auto-aliased (use "overrides" to explicitly override these)
+            $protected = ['md', 'markdown', 'txt', 'json', 'html', 'css', 'js'];
+
             foreach ($data['fileTypes'] as $alias) {
-                // Skip if alias is same as slug or conflicts with common extensions
-                if ($alias !== $grammarSlug && !in_array($alias, ['md', 'txt', 'json', 'html', 'css', 'js'])) {
+                // Skip if alias is same as slug or is protected
+                if ($alias !== $grammarSlug && !in_array($alias, $protected)) {
                     $this->grav['log']->debug('CodeSh: Registering grammar alias "' . $alias . '" for ' . $grammarSlug);
                     $this->phiki->grammar($alias, $grammarFile);
                 }
@@ -999,55 +1016,78 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Process markdown code blocks after page content is processed
+     * Process markdown code blocks in the final HTML output
      */
-    public function onPageContentProcessed(Event $e): void
+    public function onOutputGenerated(): void
     {
         $config = $this->config->get('plugins.codesh');
 
         // Check if markdown processing is enabled
         if (!($config['process_markdown'] ?? true)) {
+            $this->grav['log']->debug('CodeSh: process_markdown is disabled, skipping');
             return;
         }
 
-        $page = $e['page'];
-        $content = $page->getRawContent();
+        // Get the final HTML output
+        $output = $this->grav->output;
 
-        // Skip if no code blocks or already processed by codesh
-        if (strpos($content, '<pre><code') === false || strpos($content, 'codesh-block') !== false) {
+        if (empty($output)) {
+            $this->grav['log']->debug('CodeSh: Output is empty, skipping');
             return;
         }
+
+        // Count unprocessed code blocks
+        $hasUnprocessedBlocks = preg_match_all('/<pre><code[^>]*>/', $output, $matches);
+        $this->grav['log']->debug('CodeSh: Found ' . $hasUnprocessedBlocks . ' potential code blocks in output');
+
+        // Skip if no code blocks
+        if ($hasUnprocessedBlocks === 0) {
+            return;
+        }
+
+        $replacementCount = 0;
 
         // Process markdown code blocks: <pre><code class="language-xxx">...</code></pre>
-        $content = preg_replace_callback(
+        // Skip blocks that are already inside codesh-block (from shortcode processing)
+        $output = preg_replace_callback(
             '/<pre><code class="language-([^"]+)">(.*?)<\/code><\/pre>/s',
-            function ($matches) use ($config) {
+            function ($matches) use ($config, &$replacementCount) {
+                $fullMatch = $matches[0];
                 $lang = $matches[1];
                 $code = $matches[2];
 
+                $this->grav['log']->debug('CodeSh: Processing code block with lang="' . $lang . '"');
+
                 // Decode HTML entities back to original code
                 $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
+                $replacementCount++;
                 return $this->highlightCode($code, $lang, $config);
             },
-            $content
+            $output
         );
 
         // Also process code blocks WITHOUT a language class: <pre><code>...</code></pre>
-        $content = preg_replace_callback(
+        $output = preg_replace_callback(
             '/<pre><code>(.*?)<\/code><\/pre>/s',
-            function ($matches) use ($config) {
+            function ($matches) use ($config, &$replacementCount) {
                 $code = $matches[1];
+
+                $this->grav['log']->debug('CodeSh: Processing code block without lang');
 
                 // Decode HTML entities back to original code
                 $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
+                $replacementCount++;
                 return $this->highlightCode($code, 'txt', $config);
             },
-            $content
+            $output
         );
 
-        $page->setRawContent($content);
+        $this->grav['log']->debug('CodeSh: Replaced ' . $replacementCount . ' code blocks');
+
+        // Update the output
+        $this->grav->output = $output;
     }
 
     /**
@@ -1086,12 +1126,37 @@ class CodeshPlugin extends Plugin
 
             $html = $output->toString();
 
-            // Add dual-theme class when using CSS variable switching
-            $dualClass = is_array($theme) ? ' codesh-dual-theme' : '';
+            // Build classes
+            $classes = ['codesh-block'];
+            if (is_array($theme)) {
+                $classes[] = 'codesh-dual-theme';
+            }
 
-            return '<div class="codesh-block no-header' . $dualClass . '" data-language="' . htmlspecialchars($lang) . '">'
-                . '<div class="codesh-code">' . $html . '</div>'
-                . '</div>';
+            // Build the complete HTML output with header
+            $result = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
+
+            // Add header with language and copy button
+            $result .= '<div class="codesh-header">';
+            if (!empty($lang)) {
+                $result .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
+            } else {
+                $result .= '<span class="codesh-lang"></span>';
+            }
+
+            // Copy button
+            $result .= '<button class="codesh-copy" type="button" title="Copy code">';
+            $result .= '<svg class="codesh-copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">';
+            $result .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+            $result .= '</svg>';
+            $result .= '<span class="codesh-copy-text">Copy</span>';
+            $result .= '</button>';
+            $result .= '</div>';
+
+            // Add the code
+            $result .= '<div class="codesh-code">' . $html . '</div>';
+            $result .= '</div>';
+
+            return $result;
 
         } catch (\Exception $e) {
             // Log the error

@@ -68,14 +68,30 @@ class CodeshShortcode extends Shortcode
         $grammarSlug = basename($grammarFile, '.json');
         $this->phiki->grammar($grammarSlug, $grammarFile);
 
-        // Also register aliases from fileTypes array
+        // Read grammar data for aliases and overrides
         $content = file_get_contents($grammarFile);
         $data = json_decode($content, true);
 
-        if ($data && isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+        if (!$data) {
+            return;
+        }
+
+        // Check for explicit overrides - these will replace built-in grammars
+        // Can be specified as "overrides": ["markdown", "md"] in the grammar JSON
+        if (isset($data['overrides']) && is_array($data['overrides'])) {
+            foreach ($data['overrides'] as $override) {
+                $this->phiki->grammar($override, $grammarFile);
+            }
+        }
+
+        // Also register aliases from fileTypes array
+        if (isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+            // Protected extensions that won't be auto-aliased (use "overrides" to explicitly override these)
+            $protected = ['md', 'markdown', 'txt', 'json', 'html', 'css', 'js'];
+
             foreach ($data['fileTypes'] as $alias) {
-                // Skip if alias is same as slug or conflicts with common extensions
-                if ($alias !== $grammarSlug && !in_array($alias, ['md', 'txt', 'json', 'html', 'css', 'js'])) {
+                // Skip if alias is same as slug or is protected
+                if ($alias !== $grammarSlug && !in_array($alias, $protected)) {
                     $this->phiki->grammar($alias, $grammarFile);
                 }
             }

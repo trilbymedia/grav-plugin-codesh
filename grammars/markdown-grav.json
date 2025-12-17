@@ -1,7 +1,8 @@
 {
   "name": "Markdown (Grav)",
   "scopeName": "text.html.markdown.grav",
-  "fileTypes": ["grav", "md"],
+  "overrides": ["markdown", "md"],
+  "fileTypes": ["grav","md", "markdown"],
   "patterns": [
     { "include": "#frontmatter" },
     { "include": "#fenced-code-block" },
