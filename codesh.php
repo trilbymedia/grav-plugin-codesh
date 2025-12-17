@@ -5,6 +5,7 @@ namespace Grav\Plugin;
 use Composer\Autoload\ClassLoader;
 use Grav\Common\Plugin;
 use Grav\Common\Utils;
+use Grav\Plugin\Codesh\GrammarManager;
 use Grav\Plugin\Codesh\ThemeManager;
 use Phiki\Phiki;
 use Phiki\Transformers\Decorations\PreDecoration;
@@ -15,6 +16,7 @@ class CodeshPlugin extends Plugin
 {
     protected ?Phiki $phiki = null;
     protected ?ThemeManager $themeManager = null;
+    protected ?GrammarManager $grammarManager = null;
 
     /**
      * @return array
@@ -46,13 +48,11 @@ class CodeshPlugin extends Plugin
     {
         if ($this->isAdmin()) {
             $this->enable([
-                'onAdminMenu' => ['onAdminMenu', 0],
                 'onAdminTwigTemplatePaths' => ['onAdminTwigTemplatePaths', 1000],  // High priority to run early
                 'onTwigLoader' => ['onTwigLoader', 0],  // Add paths directly to Twig loader
-                'onTwigSiteVariables' => ['onAdminTwigSiteVariables', 0],
                 'onAssetsInitialized' => ['onAssetsInitialized', 0],
-                // Priority 0 runs after admin's priority 1000 (higher = earlier in Symfony)
-                'onPagesInitialized' => ['onAdminPagesInitialized', 0],
+                // High priority to intercept AJAX requests before admin routing
+                'onPagesInitialized' => ['onAdminPagesInitialized', 100000],
             ]);
             return;
         }
@@ -60,7 +60,7 @@ class CodeshPlugin extends Plugin
         $this->enable([
             'onShortcodeHandlers' => ['onShortcodeHandlers', 0],
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
-            'onPageContentProcessed' => ['onPageContentProcessed', 0],
+            'onOutputGenerated' => ['onOutputGenerated', 0],
         ]);
     }
 
@@ -76,24 +76,19 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Add admin menu item for theme editor
+     * Get Grammar Manager instance
      */
-    public function onAdminMenu(): void
+    public function getGrammarManager(): GrammarManager
     {
-        $this->grav['twig']->plugins_hooked_nav['PLUGIN_CODESH.THEMES'] = [
-            'route' => 'codesh-themes',
-            'icon' => 'fa-palette',
-            'authorize' => 'admin.plugins',
-            'priority' => 10
-        ];
+        if ($this->grammarManager === null) {
+            $this->grammarManager = new GrammarManager($this->grav);
+        }
+        return $this->grammarManager;
     }
 
+
     /**
-     * Add admin template paths
-     *
-     * This adds paths for:
-     * 1. Custom form field types (templates/forms/fields/*)
-     * 2. Admin page templates (admin/templates/*)
+     * Add admin template paths for custom form field types
      */
     public function onAdminTwigTemplatePaths(Event $e): void
     {
@@ -101,18 +96,8 @@ class CodeshPlugin extends Plugin
             return;
         }
 
-        // Get reference to paths array - Note: Event passes by reference from admin plugin
-        // We need to manipulate the array that was passed into the Event
-        $pluginTemplates = __DIR__ . '/templates';
-        $adminTemplates = __DIR__ . '/admin/templates';
-
-        // Add our template directories
-        // Using direct array manipulation ensures the reference is maintained
         $currentPaths = $e['paths'];
-        $newPaths = [$pluginTemplates, $adminTemplates];
-        foreach (array_reverse($newPaths) as $path) {
-            array_unshift($currentPaths, $path);
-        }
+        array_unshift($currentPaths, __DIR__ . '/templates');
         $e['paths'] = $currentPaths;
     }
 
@@ -132,27 +117,25 @@ class CodeshPlugin extends Plugin
         $twig->prependPath(__DIR__ . '/templates');
     }
 
-    /**
-     * Admin Twig site variables
-     */
-    public function onAdminTwigSiteVariables(): void
-    {
-        // Add assets for theme editor page
-        if (isset($this->grav['admin']) && $this->grav['admin']->location === 'codesh-themes') {
-            $assets = $this->grav['assets'];
-            $assets->addCss('plugin://codesh/admin/css/theme-editor.css', ['priority' => 10]);
-            $assets->addJs('plugin://codesh/admin/js/theme-editor.js', ['group' => 'bottom', 'priority' => 10]);
-        }
-    }
 
     /**
-     * Register assets for the codeshtheme custom field type
+     * Register assets for custom field types (theme picker, grammar list)
      */
     public function onAssetsInitialized(): void
     {
         $assets = $this->grav['assets'];
+
+        // Theme picker field
         $assets->addCss('plugin://codesh/admin/css/codeshtheme-field.css', ['priority' => 10]);
         $assets->addJs('plugin://codesh/admin/js/codeshtheme-field.js', [
+            'group' => 'bottom',
+            'loading' => 'defer',
+            'priority' => 120
+        ]);
+
+        // Grammar list field
+        $assets->addCss('plugin://codesh/admin/css/codeshgrammarlist-field.css', ['priority' => 10]);
+        $assets->addJs('plugin://codesh/admin/js/codeshgrammarlist-field.js', [
             'group' => 'bottom',
             'loading' => 'defer',
             'priority' => 120
@@ -160,7 +143,7 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Handle admin routes for theme editor
+     * Handle admin routes for theme editor and grammar API
      */
     public function onAdminPagesInitialized(): void
     {
@@ -174,70 +157,43 @@ class CodeshPlugin extends Plugin
                 while (ob_get_level()) {
                     ob_end_clean();
                 }
-                $this->handleThemeEditorRoutes();
+
+                // Check if this is a grammar request (under codesh-themes/grammars/*)
+                if (strpos($path, 'codesh-themes/grammars') !== false) {
+                    $this->handleGrammarApiRoutes();
+                } else {
+                    $this->handleThemeEditorRoutes();
+                }
                 exit;
             }
-        }
-
-        // Check if admin is available for non-AJAX requests
-        if (!isset($this->grav['admin'])) {
-            return;
-        }
-
-        $admin = $this->grav['admin'];
-
-        // Check for theme editor routes using admin's location
-        if ($admin->location === 'codesh-themes') {
-            $this->handleThemeEditorRoutes();
         }
     }
 
     /**
-     * Route handler for theme editor
+     * Handle theme API routes (AJAX only)
      */
     protected function handleThemeEditorRoutes(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']);
 
-        // Parse action from URI (works for both AJAX and regular requests)
+        // Parse action from URI
         $uri = $this->grav['uri'];
         $path = $uri->path();
-        $action = 'index';
+        $action = 'list';
         $param = null;
 
         // Extract action from path like /grav-helios/admin/codesh-themes/list
         if (preg_match('/codesh-themes\/([^\/\?]+)(?:\/([^\/\?]+))?/', $path, $matches)) {
-            $action = $matches[1] ?? 'index';
+            $action = $matches[1] ?? 'list';
             $param = $matches[2] ?? null;
         }
 
-        // Handle AJAX requests (GET, POST, or DELETE)
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            if ($method === 'GET' && $action === 'list') {
-                $this->handleAjaxList();
-                exit;
-            }
-            if ($method === 'POST') {
-                $this->handleAjaxRequest($action);
-                exit;
-            }
-            if ($method === 'DELETE') {
-                $this->handleAjaxDelete($param ?? $action);
-                exit;
-            }
-        }
-
-        // Handle export (GET with download)
-        if ($action === 'export' && $param) {
-            $this->handleExport($param);
-            exit;
-        }
-
-        // Handle delete (via POST with action parameter)
-        if ($method === 'POST' && $action === 'delete') {
-            $this->handleDelete();
-            exit;
+        if ($method === 'GET' && $action === 'list') {
+            $this->handleAjaxList();
+        } elseif ($method === 'POST') {
+            $this->handleAjaxRequest($action);
+        } elseif ($method === 'DELETE') {
+            $this->handleAjaxDelete($param ?? $action);
         }
     }
 
@@ -460,77 +416,12 @@ class CodeshPlugin extends Plugin
         header('Content-Type: application/json');
         header('Cache-Control: no-cache, no-store, must-revalidate');
 
-        // Validate nonce from header
-        $nonce = $_SERVER['HTTP_X_GRAV_NONCE'] ?? '';
-        if (!Utils::verifyNonce($nonce, 'admin-form')) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Invalid security token']);
-            return;
-        }
-
+        // Note: No nonce validation for read-only list endpoint
         $themeManager = $this->getThemeManager();
 
         echo json_encode([
             'builtin' => $themeManager->listBuiltinThemes(),
             'custom' => $themeManager->listCustomThemes()
-        ]);
-    }
-
-    /**
-     * Handle theme export
-     */
-    protected function handleExport(string $name): void
-    {
-        $themeManager = $this->getThemeManager();
-
-        try {
-            $json = $themeManager->exportTheme($name);
-
-            header('Content-Type: application/json');
-            header('Content-Disposition: attachment; filename="' . $name . '.json"');
-            header('Content-Length: ' . strlen($json));
-
-            echo $json;
-        } catch (\Exception $e) {
-            header('HTTP/1.1 404 Not Found');
-            echo json_encode(['error' => $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Handle theme delete (POST method)
-     */
-    protected function handleDelete(): void
-    {
-        header('Content-Type: application/json');
-
-        // Validate nonce
-        $nonce = $_POST['admin-nonce'] ?? '';
-        if (!Utils::verifyNonce($nonce, 'admin-form')) {
-            echo json_encode(['error' => 'Invalid security token']);
-            return;
-        }
-
-        $name = $_POST['name'] ?? '';
-
-        if (empty($name)) {
-            echo json_encode(['error' => 'Theme name is required']);
-            return;
-        }
-
-        $themeManager = $this->getThemeManager();
-
-        // Only allow deleting custom themes
-        if (!$themeManager->customThemeExists($name)) {
-            echo json_encode(['error' => 'Can only delete custom themes']);
-            return;
-        }
-
-        $success = $themeManager->deleteTheme($name);
-
-        echo json_encode([
-            'success' => $success,
-            'message' => $success ? 'Theme deleted successfully' : 'Failed to delete theme'
         ]);
     }
 
@@ -582,6 +473,196 @@ class CodeshPlugin extends Plugin
             echo json_encode([
                 'success' => false,
                 'error' => 'Failed to delete theme'
+            ]);
+        }
+    }
+
+    /**
+     * Handle grammar API routes (AJAX only)
+     */
+    protected function handleGrammarApiRoutes(): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+        // Parse action from URI
+        $uri = $this->grav['uri'];
+        $path = $uri->path();
+        $action = 'list';
+        $param = null;
+
+        // Extract action from path like /grav-helios/admin/codesh-themes/grammars/list
+        if (preg_match('/codesh-themes\/grammars\/([^\/\?]+)(?:\/([^\/\?]+))?/', $path, $matches)) {
+            $action = $matches[1] ?? 'list';
+            $param = $matches[2] ?? null;
+        }
+
+        // Handle AJAX requests (GET, POST, or DELETE)
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            if ($method === 'GET' && $action === 'list') {
+                $this->handleGrammarList();
+                exit;
+            }
+            if ($method === 'POST' && $action === 'import') {
+                $this->handleGrammarImport();
+                exit;
+            }
+            if ($method === 'DELETE') {
+                $this->handleGrammarDelete($param ?? $action);
+                exit;
+            }
+        }
+    }
+
+    /**
+     * Handle AJAX GET request for grammar list
+     */
+    protected function handleGrammarList(): void
+    {
+        // Clean any output buffers
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+
+        // Note: No nonce validation for read-only list endpoint
+        $grammarManager = $this->getGrammarManager();
+
+        echo json_encode([
+            'custom' => $grammarManager->listCustomGrammars(),
+            'builtin' => $grammarManager->listBuiltinGrammars()
+        ]);
+    }
+
+    /**
+     * Handle AJAX GET request for single grammar
+     */
+    protected function handleGrammarGet(string $slug): void
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+
+        $grammarManager = $this->getGrammarManager();
+        $grammar = $grammarManager->getGrammar($slug);
+
+        if ($grammar) {
+            echo json_encode(['success' => true, 'grammar' => $grammar]);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Grammar not found']);
+        }
+    }
+
+    /**
+     * Handle AJAX POST request for grammar import
+     */
+    protected function handleGrammarImport(): void
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+
+        // Validate nonce
+        $nonce = $_SERVER['HTTP_X_GRAV_NONCE'] ?? '';
+        if (!Utils::verifyNonce($nonce, 'admin-form')) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Invalid security token']);
+            return;
+        }
+
+        if (!isset($_FILES['grammar_file']) || $_FILES['grammar_file']['error'] !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No file uploaded or upload error']);
+            return;
+        }
+
+        $file = $_FILES['grammar_file'];
+
+        // Validate file type
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if ($extension !== 'json') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Only JSON files are allowed']);
+            return;
+        }
+
+        // Validate file size (max 1MB)
+        if ($file['size'] > 1048576) {
+            http_response_code(400);
+            echo json_encode(['error' => 'File too large (max 1MB)']);
+            return;
+        }
+
+        try {
+            $grammarManager = $this->getGrammarManager();
+            $slug = $grammarManager->importGrammar($file);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Grammar imported successfully',
+                'slug' => $slug
+            ]);
+        } catch (\Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle AJAX DELETE request for grammar deletion
+     */
+    protected function handleGrammarDelete(string $slug): void
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+
+        // Validate nonce
+        $nonce = $_SERVER['HTTP_X_GRAV_NONCE'] ?? '';
+        if (!Utils::verifyNonce($nonce, 'admin-form')) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Invalid security token']);
+            return;
+        }
+
+        if (empty($slug)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Grammar slug is required']);
+            return;
+        }
+
+        $grammarManager = $this->getGrammarManager();
+
+        // Only allow deleting custom grammars
+        if (!$grammarManager->customGrammarExists($slug)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Can only delete custom grammars']);
+            return;
+        }
+
+        $success = $grammarManager->deleteGrammar($slug);
+
+        if ($success) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Grammar deleted successfully'
+            ]);
+        } else {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Failed to delete grammar'
             ]);
         }
     }
@@ -843,7 +924,7 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Get Phiki instance with custom themes registered
+     * Get Phiki instance with custom themes and grammars registered
      */
     protected function getPhiki(): Phiki
     {
@@ -867,61 +948,146 @@ class CodeshPlugin extends Plugin
                     $this->phiki->theme($themeName, $themeFile);
                 }
             }
+
+            // Register custom grammars from plugin's grammars directory
+            $grammarsDir = __DIR__ . '/grammars';
+            $this->grav['log']->debug('CodeSh (main): Looking for grammars in ' . $grammarsDir . ' (exists: ' . (is_dir($grammarsDir) ? 'yes' : 'no') . ')');
+            if (is_dir($grammarsDir)) {
+                $files = glob($grammarsDir . '/*.json');
+                $this->grav['log']->debug('CodeSh (main): Found ' . count($files) . ' grammar files');
+                foreach ($files as $grammarFile) {
+                    $this->registerGrammarWithAliases($grammarFile);
+                }
+            } else {
+                $this->grav['log']->warning('CodeSh (main): Grammars directory not found: ' . $grammarsDir);
+            }
+
+            // Register user custom grammars from data directory
+            $userGrammarsDir = $this->grav['locator']->findResource('user://data/codesh/grammars', true);
+            if ($userGrammarsDir && is_dir($userGrammarsDir)) {
+                foreach (glob($userGrammarsDir . '/*.json') as $grammarFile) {
+                    $this->registerGrammarWithAliases($grammarFile);
+                }
+            }
         }
 
         return $this->phiki;
     }
 
     /**
-     * Process markdown code blocks after page content is processed
+     * Register a grammar file with Phiki, including aliases from fileTypes
      */
-    public function onPageContentProcessed(Event $e): void
+    protected function registerGrammarWithAliases(string $grammarFile): void
+    {
+        $grammarSlug = basename($grammarFile, '.json');
+        $this->grav['log']->debug('CodeSh: Registering grammar "' . $grammarSlug . '" from ' . $grammarFile);
+        $this->phiki->grammar($grammarSlug, $grammarFile);
+
+        // Read grammar data for aliases and overrides
+        $content = file_get_contents($grammarFile);
+        $data = json_decode($content, true);
+
+        if (!$data) {
+            return;
+        }
+
+        // Check for explicit overrides - these will replace built-in grammars
+        // Can be specified as "overrides": ["markdown", "md"] in the grammar JSON
+        if (isset($data['overrides']) && is_array($data['overrides'])) {
+            foreach ($data['overrides'] as $override) {
+                $this->grav['log']->debug('CodeSh: Overriding grammar "' . $override . '" with ' . $grammarSlug);
+                $this->phiki->grammar($override, $grammarFile);
+            }
+        }
+
+        // Also register aliases from fileTypes array
+        if (isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+            // Protected extensions that won't be auto-aliased (use "overrides" to explicitly override these)
+            $protected = ['md', 'markdown', 'txt', 'json', 'html', 'css', 'js'];
+
+            foreach ($data['fileTypes'] as $alias) {
+                // Skip if alias is same as slug or is protected
+                if ($alias !== $grammarSlug && !in_array($alias, $protected)) {
+                    $this->grav['log']->debug('CodeSh: Registering grammar alias "' . $alias . '" for ' . $grammarSlug);
+                    $this->phiki->grammar($alias, $grammarFile);
+                }
+            }
+        }
+    }
+
+    /**
+     * Process markdown code blocks in the final HTML output
+     */
+    public function onOutputGenerated(): void
     {
         $config = $this->config->get('plugins.codesh');
 
         // Check if markdown processing is enabled
         if (!($config['process_markdown'] ?? true)) {
+            $this->grav['log']->debug('CodeSh: process_markdown is disabled, skipping');
             return;
         }
 
-        $page = $e['page'];
-        $content = $page->getRawContent();
+        // Get the final HTML output
+        $output = $this->grav->output;
 
-        // Skip if no code blocks or already processed by codesh
-        if (strpos($content, '<pre><code') === false || strpos($content, 'codesh-block') !== false) {
+        if (empty($output)) {
+            $this->grav['log']->debug('CodeSh: Output is empty, skipping');
             return;
         }
+
+        // Count unprocessed code blocks
+        $hasUnprocessedBlocks = preg_match_all('/<pre><code[^>]*>/', $output, $matches);
+        $this->grav['log']->debug('CodeSh: Found ' . $hasUnprocessedBlocks . ' potential code blocks in output');
+
+        // Skip if no code blocks
+        if ($hasUnprocessedBlocks === 0) {
+            return;
+        }
+
+        $replacementCount = 0;
 
         // Process markdown code blocks: <pre><code class="language-xxx">...</code></pre>
-        $content = preg_replace_callback(
+        // Skip blocks that are already inside codesh-block (from shortcode processing)
+        $output = preg_replace_callback(
             '/<pre><code class="language-([^"]+)">(.*?)<\/code><\/pre>/s',
-            function ($matches) use ($config) {
+            function ($matches) use ($config, &$replacementCount) {
+                $fullMatch = $matches[0];
                 $lang = $matches[1];
                 $code = $matches[2];
 
+                $this->grav['log']->debug('CodeSh: Processing code block with lang="' . $lang . '"');
+
                 // Decode HTML entities back to original code
                 $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
+                $replacementCount++;
                 return $this->highlightCode($code, $lang, $config);
             },
-            $content
+            $output
         );
 
         // Also process code blocks WITHOUT a language class: <pre><code>...</code></pre>
-        $content = preg_replace_callback(
+        $output = preg_replace_callback(
             '/<pre><code>(.*?)<\/code><\/pre>/s',
-            function ($matches) use ($config) {
+            function ($matches) use ($config, &$replacementCount) {
                 $code = $matches[1];
+
+                $this->grav['log']->debug('CodeSh: Processing code block without lang');
 
                 // Decode HTML entities back to original code
                 $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
+                $replacementCount++;
                 return $this->highlightCode($code, 'txt', $config);
             },
-            $content
+            $output
         );
 
-        $page->setRawContent($content);
+        $this->grav['log']->debug('CodeSh: Replaced ' . $replacementCount . ' code blocks');
+
+        // Update the output
+        $this->grav->output = $output;
     }
 
     /**
@@ -929,6 +1095,9 @@ class CodeshPlugin extends Plugin
      */
     protected function highlightCode(string $code, string $lang, array $config): string
     {
+        // Debug: Log the lang being requested
+        $this->grav['log']->debug('CodeSh (main): highlightCode() called with lang="' . $lang . '", content_len=' . strlen($code));
+
         // Detect theme mode from Helios theme config
         $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
@@ -957,16 +1126,43 @@ class CodeshPlugin extends Plugin
 
             $html = $output->toString();
 
-            // Add dual-theme class when using CSS variable switching
-            $dualClass = is_array($theme) ? ' codesh-dual-theme' : '';
+            // Build classes
+            $classes = ['codesh-block'];
+            if (is_array($theme)) {
+                $classes[] = 'codesh-dual-theme';
+            }
 
-            return '<div class="codesh-block no-header' . $dualClass . '" data-language="' . htmlspecialchars($lang) . '">'
-                . '<div class="codesh-code">' . $html . '</div>'
-                . '</div>';
+            // Build the complete HTML output with header
+            $result = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
+
+            // Add header with language and copy button
+            $result .= '<div class="codesh-header">';
+            if (!empty($lang)) {
+                $result .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
+            } else {
+                $result .= '<span class="codesh-lang"></span>';
+            }
+
+            // Copy button
+            $result .= '<button class="codesh-copy" type="button" title="Copy code">';
+            $result .= '<svg class="codesh-copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">';
+            $result .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+            $result .= '</svg>';
+            $result .= '<span class="codesh-copy-text">Copy</span>';
+            $result .= '</button>';
+            $result .= '</div>';
+
+            // Add the code
+            $result .= '<div class="codesh-code">' . $html . '</div>';
+            $result .= '</div>';
+
+            return $result;
 
         } catch (\Exception $e) {
+            // Log the error
+            $this->grav['log']->error('CodeSh (main): Error highlighting lang="' . $lang . '": ' . $e->getMessage());
             // Fallback to original on error
-            return '<div class="codesh-block codesh-error no-header"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
+            return '<div class="codesh-block codesh-error no-header" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
         }
     }
 }

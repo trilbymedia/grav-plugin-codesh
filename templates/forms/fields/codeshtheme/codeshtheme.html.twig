@@ -14,7 +14,7 @@
     {% set choose_label = field.choose_label|default('Choose Theme') %}
     {% set clear_label = field.clear_label|default('Clear') %}
     {% set variant = field.variant|default('dark') %}
-    {% set endpoint = admin_route('/codesh-themes') %}
+    {% set endpoint = base_url_relative ~ '/admin/codesh-themes' %}
 
     <div class="codeshtheme-field__container"
          data-endpoint="{{ endpoint|e('html_attr') }}"

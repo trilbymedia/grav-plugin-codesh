@@ -10,3 +10,4 @@ PLUGIN_CODESH:
   SHOW_LINE_NUMBERS: Show Line Numbers (Default)
   SHOW_LINE_NUMBERS_HELP: Default setting for showing line numbers. Can be overridden per code block.
   THEMES: Theme Gallery
+  GRAMMARS: Grammars

@@ -1,7 +1,7 @@
 name: Code Syntax Highlighter
 slug: codesh
 type: plugin
-version: 1.0.1
+version: 1.0.2
 description: Server-side syntax highlighting using Phiki with line numbers, line highlighting, and focus support
 icon: code
 author:
@@ -22,64 +22,83 @@ form:
   validation: loose
   fields:
 
-    enabled:
-      type: toggle
-      label: PLUGIN_ADMIN.PLUGIN_STATUS
-      highlight: 1
-      default: 1
-      options:
-        1: PLUGIN_ADMIN.ENABLED
-        0: PLUGIN_ADMIN.DISABLED
-      validate:
-        type: bool
+    tabs:
+      type: tabs
+      active: 1
+      fields:
 
-    active:
-      type: toggle
-      label: PLUGIN_CODESH.ACTIVE
-      highlight: 1
-      default: 1
-      options:
-        1: PLUGIN_ADMIN.YES
-        0: PLUGIN_ADMIN.NO
-      validate:
-        type: bool
+        tab_general:
+          type: tab
+          title: PLUGIN_CODESH.GENERAL
+          fields:
 
-    process_markdown:
-      type: toggle
-      label: PLUGIN_CODESH.PROCESS_MARKDOWN
-      help: PLUGIN_CODESH.PROCESS_MARKDOWN_HELP
-      highlight: 1
-      default: 1
-      options:
-        1: PLUGIN_ADMIN.YES
-        0: PLUGIN_ADMIN.NO
-      validate:
-        type: bool
+            enabled:
+              type: toggle
+              label: PLUGIN_ADMIN.PLUGIN_STATUS
+              highlight: 1
+              default: 1
+              options:
+                1: PLUGIN_ADMIN.ENABLED
+                0: PLUGIN_ADMIN.DISABLED
+              validate:
+                type: bool
 
-    theme_dark:
-      type: codeshtheme
-      label: PLUGIN_CODESH.DARK_THEME
-      help: PLUGIN_CODESH.DARK_THEME_HELP
-      variant: dark
-      default: helios-dark
-      placeholder: Select dark theme...
+            active:
+              type: toggle
+              label: PLUGIN_CODESH.ACTIVE
+              highlight: 1
+              default: 1
+              options:
+                1: PLUGIN_ADMIN.YES
+                0: PLUGIN_ADMIN.NO
+              validate:
+                type: bool
 
-    theme_light:
-      type: codeshtheme
-      label: PLUGIN_CODESH.LIGHT_THEME
-      help: PLUGIN_CODESH.LIGHT_THEME_HELP
-      variant: light
-      default: helios-light
-      placeholder: Select light theme...
+            process_markdown:
+              type: toggle
+              label: PLUGIN_CODESH.PROCESS_MARKDOWN
+              help: PLUGIN_CODESH.PROCESS_MARKDOWN_HELP
+              highlight: 1
+              default: 1
+              options:
+                1: PLUGIN_ADMIN.YES
+                0: PLUGIN_ADMIN.NO
+              validate:
+                type: bool
 
-    show_line_numbers:
-      type: toggle
-      label: PLUGIN_CODESH.SHOW_LINE_NUMBERS
-      help: PLUGIN_CODESH.SHOW_LINE_NUMBERS_HELP
-      highlight: 0
-      default: 0
-      options:
-        1: PLUGIN_ADMIN.YES
-        0: PLUGIN_ADMIN.NO
-      validate:
-        type: bool
+            theme_dark:
+              type: codeshtheme
+              label: PLUGIN_CODESH.DARK_THEME
+              help: PLUGIN_CODESH.DARK_THEME_HELP
+              variant: dark
+              default: helios-dark
+              placeholder: Select dark theme...
+
+            theme_light:
+              type: codeshtheme
+              label: PLUGIN_CODESH.LIGHT_THEME
+              help: PLUGIN_CODESH.LIGHT_THEME_HELP
+              variant: light
+              default: helios-light
+              placeholder: Select light theme...
+
+            show_line_numbers:
+              type: toggle
+              label: PLUGIN_CODESH.SHOW_LINE_NUMBERS
+              help: PLUGIN_CODESH.SHOW_LINE_NUMBERS_HELP
+              highlight: 0
+              default: 0
+              options:
+                1: PLUGIN_ADMIN.YES
+                0: PLUGIN_ADMIN.NO
+              validate:
+                type: bool
+
+        tab_grammars:
+          type: tab
+          title: PLUGIN_CODESH.GRAMMARS
+          fields:
+
+            grammars_list:
+              type: codeshgrammarlist
+              label: false

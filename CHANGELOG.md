@@ -1,5 +1,14 @@
+# v1.0.2
+## 12/16/2025
+
+1. [](#new)
+    * Added new `grav` grammar for frontmatter + shortcode + twig support in markdown
+1. [](#improved)
+    * Override `md` and `markdown` to use new `grav` grammar
+    * Improve traditional markdown (triple backticks) support in Codesh
+
 # v1.0.1
-## 12/14/2024
+## 12/14/2025
 
 1. [](#improved)
    * Fixed blueprints
@@ -7,7 +16,7 @@
    * Fixed empty badge when `show-lang` is disabled 
 
 # v1.0.0
-## 12/14/2024
+## 12/14/2025
 
 1. [](#new)
     * Initial release of CodeSh plugin

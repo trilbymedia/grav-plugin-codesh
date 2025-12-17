@@ -14,24 +14,88 @@ class CodeshShortcode extends Shortcode
     protected ?Phiki $phiki = null;
 
     /**
-     * Get Phiki instance with custom themes registered
+     * Get Phiki instance with custom themes and grammars registered
      */
     protected function getPhiki(): Phiki
     {
         if ($this->phiki === null) {
             $this->phiki = new Phiki();
+            $pluginDir = dirname(__DIR__, 2);
 
             // Register custom themes from plugin's themes directory
-            $themesDir = dirname(__DIR__, 2) . '/themes';
+            $themesDir = $pluginDir . '/themes';
             if (is_dir($themesDir)) {
                 foreach (glob($themesDir . '/*.json') as $themeFile) {
                     $themeName = basename($themeFile, '.json');
                     $this->phiki->theme($themeName, $themeFile);
                 }
             }
+
+            // Register user custom themes from data directory
+            $userThemesDir = $this->grav['locator']->findResource('user://data/codesh/themes', true);
+            if ($userThemesDir && is_dir($userThemesDir)) {
+                foreach (glob($userThemesDir . '/*.json') as $themeFile) {
+                    $themeName = basename($themeFile, '.json');
+                    $this->phiki->theme($themeName, $themeFile);
+                }
+            }
+
+            // Register custom grammars from plugin's grammars directory
+            $grammarsDir = $pluginDir . '/grammars';
+            if (is_dir($grammarsDir)) {
+                foreach (glob($grammarsDir . '/*.json') as $grammarFile) {
+                    $this->registerGrammarWithAliases($grammarFile);
+                }
+            }
+
+            // Register user custom grammars from data directory
+            $userGrammarsDir = $this->grav['locator']->findResource('user://data/codesh/grammars', true);
+            if ($userGrammarsDir && is_dir($userGrammarsDir)) {
+                foreach (glob($userGrammarsDir . '/*.json') as $grammarFile) {
+                    $this->registerGrammarWithAliases($grammarFile);
+                }
+            }
         }
 
         return $this->phiki;
+    }
+
+    /**
+     * Register a grammar file with Phiki, including aliases from fileTypes
+     */
+    protected function registerGrammarWithAliases(string $grammarFile): void
+    {
+        $grammarSlug = basename($grammarFile, '.json');
+        $this->phiki->grammar($grammarSlug, $grammarFile);
+
+        // Read grammar data for aliases and overrides
+        $content = file_get_contents($grammarFile);
+        $data = json_decode($content, true);
+
+        if (!$data) {
+            return;
+        }
+
+        // Check for explicit overrides - these will replace built-in grammars
+        // Can be specified as "overrides": ["markdown", "md"] in the grammar JSON
+        if (isset($data['overrides']) && is_array($data['overrides'])) {
+            foreach ($data['overrides'] as $override) {
+                $this->phiki->grammar($override, $grammarFile);
+            }
+        }
+
+        // Also register aliases from fileTypes array
+        if (isset($data['fileTypes']) && is_array($data['fileTypes'])) {
+            // Protected extensions that won't be auto-aliased (use "overrides" to explicitly override these)
+            $protected = ['md', 'markdown', 'txt', 'json', 'html', 'css', 'js'];
+
+            foreach ($data['fileTypes'] as $alias) {
+                // Skip if alias is same as slug or is protected
+                if ($alias !== $grammarSlug && !in_array($alias, $protected)) {
+                    $this->phiki->grammar($alias, $grammarFile);
+                }
+            }
+        }
     }
 
     public function init(): void
@@ -132,6 +196,7 @@ class CodeshShortcode extends Shortcode
         try {
             // Get Phiki instance with custom themes registered
             $phiki = $this->getPhiki();
+
             $output = $phiki->codeToHtml($content, strtolower($lang), $theme);
 
             // Add 'no-highlight' class to prevent Prism.js from reprocessing
@@ -222,6 +287,9 @@ class CodeshShortcode extends Shortcode
             return $output;
 
         } catch (\Exception $e) {
+            // Log the error for debugging
+            $this->grav['log']->error('CodeSh error for lang "' . $lang . '": ' . $e->getMessage());
+
             // Fallback to plain text on error
             return '<div class="codesh-block codesh-error" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($content) . '</code></pre></div>';
         }

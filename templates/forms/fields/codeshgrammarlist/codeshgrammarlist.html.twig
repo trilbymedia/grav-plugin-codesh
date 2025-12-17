@@ -1,0 +1,68 @@
+{% extends "forms/field.html.twig" %}
+
+{% block global_attributes %}
+    data-grav-field="codeshgrammarlist"
+    data-grav-codeshgrammarlist-field
+    data-nonce="{{ admin.getNonce()|e('html_attr') }}"
+    {{ parent() }}
+{% endblock %}
+
+{% block input %}
+    <div class="codeshgrammarlist-field">
+
+        <div class="codeshgrammarlist-field__header">
+            <p class="codeshgrammarlist-field__intro">
+                Manage TextMate grammar files for syntax highlighting. Use the alias as the <code>lang</code> attribute in code blocks.
+            </p>
+            <label class="button codeshgrammarlist-field__import-btn">
+                <i class="fa fa-upload"></i> Import Grammar
+                <input type="file" accept=".json" data-codeshgrammarlist-import style="display: none;">
+            </label>
+        </div>
+
+        {# Custom Grammars Section #}
+        <div class="codeshgrammarlist-field__section" data-section="custom">
+            <h4 class="codeshgrammarlist-field__section-title">
+                <i class="fa fa-plus-circle"></i> Custom Grammars (<span data-codeshgrammarlist-custom-count>0</span>)
+            </h4>
+            <ul class="codeshgrammarlist-field__list" data-codeshgrammarlist-custom>
+                <li class="codeshgrammarlist-field__loading">
+                    <i class="fa fa-spinner fa-spin"></i> Loading...
+                </li>
+            </ul>
+            <div class="codeshgrammarlist-field__empty" data-codeshgrammarlist-empty style="display: none;">
+                <p>No custom grammars. Click "Import Grammar" to add one.</p>
+            </div>
+        </div>
+
+        {# Built-in Grammars Section #}
+        <div class="codeshgrammarlist-field__section" data-section="builtin">
+            <h4 class="codeshgrammarlist-field__section-title">
+                <i class="fa fa-cube"></i> Built-in Grammars (<span data-codeshgrammarlist-builtin-count>0</span>)
+            </h4>
+            <ul class="codeshgrammarlist-field__list" data-codeshgrammarlist-builtin>
+                <li class="codeshgrammarlist-field__loading">
+                    <i class="fa fa-spinner fa-spin"></i> Loading...
+                </li>
+            </ul>
+        </div>
+
+        {# Delete Confirmation Modal #}
+        <div class="codeshgrammarlist-field__modal" data-codeshgrammarlist-modal style="display: none;">
+            <div class="codeshgrammarlist-field__modal-content">
+                <div class="codeshgrammarlist-field__modal-header">
+                    <h3>Delete Grammar</h3>
+                    <button type="button" class="codeshgrammarlist-field__modal-close" data-codeshgrammarlist-modal-close>&times;</button>
+                </div>
+                <div class="codeshgrammarlist-field__modal-body">
+                    <p>Are you sure you want to delete "<strong data-codeshgrammarlist-delete-name></strong>"?</p>
+                    <p class="text-danger">This action cannot be undone.</p>
+                </div>
+                <div class="codeshgrammarlist-field__modal-footer">
+                    <button type="button" class="button" data-codeshgrammarlist-modal-cancel>Cancel</button>
+                    <button type="button" class="button danger" data-codeshgrammarlist-modal-confirm>Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
