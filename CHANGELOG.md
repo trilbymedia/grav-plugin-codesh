@@ -1,3 +1,9 @@
+# v1.0.3
+## 12/17/2025
+
+1. [](#bugfix)
+    * Fixed an issue with codesh filter not instantiated early enough
+
 # v1.0.2
 ## 12/16/2025
 
