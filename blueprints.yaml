@@ -1,7 +1,7 @@
 name: Code Syntax Highlighter
 slug: codesh
 type: plugin
-version: 1.0.2
+version: 1.0.3
 description: Server-side syntax highlighting using Phiki with line numbers, line highlighting, and focus support
 icon: code
 author:
