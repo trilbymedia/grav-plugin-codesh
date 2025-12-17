@@ -59,6 +59,7 @@ class CodeshPlugin extends Plugin
 
         $this->enable([
             'onShortcodeHandlers' => ['onShortcodeHandlers', 0],
+            'onTwigInitialized' => ['onTwigInitialized', 0],
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
             'onOutputGenerated' => ['onOutputGenerated', 0],
         ]);
@@ -676,16 +677,21 @@ class CodeshPlugin extends Plugin
     }
 
     /**
-     * Add CSS and JS assets and Twig extensions
+     * Add Twig filter (must be done before Twig extensions are frozen)
+     */
+    public function onTwigInitialized(): void
+    {
+        $twig = $this->grav['twig']->twig();
+        $twig->addFilter(new \Twig\TwigFilter('codesh', [$this, 'codeshFilter'], ['is_safe' => ['html']]));
+    }
+
+    /**
+     * Add CSS and JS assets
      */
     public function onTwigSiteVariables(): void
     {
         $this->grav['assets']->addCss('plugin://codesh/css/codesh.css');
         $this->grav['assets']->addJs('plugin://codesh/js/codesh.js', ['group' => 'bottom', 'defer' => true]);
-
-        // Add Twig filter for use in templates
-        $twig = $this->grav['twig']->twig();
-        $twig->addFilter(new \Twig\TwigFilter('codesh', [$this, 'codeshFilter'], ['is_safe' => ['html']]));
     }
 
     /**
