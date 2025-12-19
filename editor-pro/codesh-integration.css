@@ -1,0 +1,55 @@
+/**
+ * Codesh Plugin - Editor Pro Integration Styles
+ * Provides styled previews for Codesh shortcodes in the Editor Pro WYSIWYG editor
+ */
+
+/* Codesh shortcode blocks - general styling */
+.preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] {
+    border-color: #6366f1;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+}
+
+.preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] .shortcode-titlebar {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+}
+
+/* Code block specific styling */
+.preserved-block[data-shortcode-name="codesh"] {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.preserved-block[data-shortcode-name="codesh"] .shortcode-content {
+    background: #1f2937;
+    color: #e5e7eb;
+}
+
+/* Code group styling */
+.preserved-block[data-shortcode-name="codesh-group"] {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.preserved-block[data-shortcode-name="codesh-group"] .shortcode-content {
+    background: #1f2937;
+}
+
+/* Dark mode adjustments */
+.dark .preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] {
+    border-color: #818cf8;
+}
+
+.dark .preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] .shortcode-titlebar {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+/* Code content styling in editor */
+.preserved-block[data-shortcode-name="codesh"] pre,
+.preserved-block[data-shortcode-name="codesh"] code,
+.preserved-block[data-shortcode-name="codesh-group"] pre,
+.preserved-block[data-shortcode-name="codesh-group"] code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
