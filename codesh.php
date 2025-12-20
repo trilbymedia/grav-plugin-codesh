@@ -709,13 +709,14 @@ class CodeshPlugin extends Plugin
             // Codesh - syntax highlighted code block
             [
                 'name' => 'codesh',
-                'title' => 'Code Block',
+                'title' => 'Codesh',
                 'description' => 'Server-side syntax highlighted code block with 200+ languages',
                 'type' => 'block',
                 'plugin' => 'codesh',
                 'category' => 'code',
                 'group' => 'Codesh',
                 'icon' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
+                'bbcodeAttribute' => 'lang',  // BBCode value [codesh=xxx] maps to this attribute
                 'attributes' => [
                     'lang' => [
                         'type' => 'text',
@@ -738,7 +739,7 @@ class CodeshPlugin extends Plugin
                     'start' => [
                         'type' => 'number',
                         'title' => 'Starting Line',
-                        'default' => 1,
+                        'placeholder' => '1',
                         'min' => 1
                     ],
                     'highlight' => [
@@ -759,13 +760,18 @@ class CodeshPlugin extends Plugin
                         'default' => '',
                         'placeholder' => 'e.g., dracula, nord'
                     ],
-                    'header' => [
+                    'hide-header' => [
                         'type' => 'checkbox',
-                        'title' => 'Show Header',
-                        'default' => true
+                        'title' => 'Hide Header',
+                        'default' => false
+                    ],
+                    'diff' => [
+                        'type' => 'checkbox',
+                        'title' => 'Diff Mode',
+                        'default' => false
                     ]
                 ],
-                'titleBarAttributes' => ['lang', 'title'],
+                'titleBarAttributes' => ['title', 'lang', 'theme', 'highlight', 'line-numbers', 'diff', 'hide-header'],
                 'hasContent' => true,
                 'contentType' => 'code', // Treat content as raw code (uses CodeMirror editor)
                 'language' => 'javascript', // Default language for CodeMirror
@@ -774,7 +780,7 @@ class CodeshPlugin extends Plugin
             // Codesh Group - tabbed code blocks
             [
                 'name' => 'codesh-group',
-                'title' => 'Code Group',
+                'title' => 'Codesh Group',
                 'description' => 'Tabbed interface for multiple code examples with optional sync',
                 'type' => 'block',
                 'plugin' => 'codesh',
@@ -832,7 +838,7 @@ class CodeshPlugin extends Plugin
      *
      * @param string $content The code to highlight
      * @param string $lang The language (default: 'txt')
-     * @param array $options Options: theme, line-numbers, start, highlight, focus, class, show-lang, title, header
+     * @param array $options Options: theme, line-numbers, start, highlight, focus, class, hide-lang, title, hide-header
      * @return string The highlighted HTML
      */
     public function codeshFilter(string $content, string $lang = 'txt', array $options = []): string
@@ -844,9 +850,9 @@ class CodeshPlugin extends Plugin
             'highlight' => $options['highlight'] ?? '',
             'focus' => $options['focus'] ?? '',
             'class' => $options['class'] ?? '',
-            'show-lang' => $options['show-lang'] ?? true,
+            'hide-lang' => $options['hide-lang'] ?? false,
             'title' => $options['title'] ?? '',
-            'header' => $options['header'] ?? true,
+            'hide-header' => $options['hide-header'] ?? false,
         ], $options);
 
         // Generate cache key based on content, language, options, and theme
@@ -902,9 +908,9 @@ class CodeshPlugin extends Plugin
         $highlight = $options['highlight'] ?? '';
         $focus = $options['focus'] ?? '';
         $class = $options['class'] ?? '';
-        $showLang = $this->toBool($options['show-lang'] ?? true);
+        $showLang = !$this->toBool($options['hide-lang'] ?? false);
         $title = $options['title'] ?? '';
-        $showHeader = $this->toBool($options['header'] ?? true);
+        $showHeader = !$this->toBool($options['hide-header'] ?? false);
 
         // Clean up the content
         $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
