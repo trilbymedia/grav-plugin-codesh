@@ -765,13 +765,18 @@ class CodeshPlugin extends Plugin
                         'title' => 'Hide Header',
                         'default' => false
                     ],
+                    'hide-lang' => [
+                        'type' => 'checkbox',
+                        'title' => 'Hide Language',
+                        'default' => false
+                    ],
                     'diff' => [
                         'type' => 'checkbox',
                         'title' => 'Diff Mode',
                         'default' => false
                     ]
                 ],
-                'titleBarAttributes' => ['title', 'lang', 'theme', 'highlight', 'line-numbers', 'diff', 'hide-header'],
+                'titleBarAttributes' => ['title', 'lang', 'theme', 'highlight', 'focus', 'line-numbers', 'diff', 'hide-header', 'hide-lang'],
                 'hasContent' => true,
                 'contentType' => 'code', // Treat content as raw code (uses CodeMirror editor)
                 'language' => 'javascript', // Default language for CodeMirror
