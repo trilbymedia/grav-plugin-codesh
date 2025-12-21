@@ -1272,6 +1272,11 @@ class CodeshPlugin extends Plugin
 
             $html = $output->toString();
 
+            // Add data-1p-ignore to prevent 1Password from reprocessing code blocks
+            $html = str_replace('<pre ', '<pre data-1p-ignore="true" ', $html);
+            $html = str_replace('<code>', '<code data-1p-ignore="true">', $html);
+            $html = str_replace('<code ', '<code data-1p-ignore="true" ', $html);
+
             // Build classes
             $classes = ['codesh-block'];
             if (is_array($theme)) {
