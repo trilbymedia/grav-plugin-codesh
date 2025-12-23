@@ -1,3 +1,12 @@
+# v1.1.0
+## 12/23/2025
+
+1. [](#new)
+    * Editor Pro shortcode support
+    * New fixed CSS grammar while VSCode PR is pending
+1. [](#bugfix)
+    * Fixed an annoying issue with 1Password Browser extension injecting Prims.js to convert server side styling into a monochrome mess - uses `PrismDefenseTransformer`
+
 # v1.0.3
 ## 12/17/2025
 
