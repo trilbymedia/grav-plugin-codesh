@@ -6,6 +6,7 @@ use Composer\Autoload\ClassLoader;
 use Grav\Common\Plugin;
 use Grav\Common\Utils;
 use Grav\Plugin\Codesh\GrammarManager;
+use Grav\Plugin\Codesh\PrismDefenseTransformer;
 use Grav\Plugin\Codesh\ThemeManager;
 use Phiki\Phiki;
 use Phiki\Transformers\Decorations\PreDecoration;
@@ -929,7 +930,10 @@ class CodeshPlugin extends Plugin
             $phiki = $this->getPhiki();
             $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
 
-            // Add 'no-highlight' class to prevent Prism.js from reprocessing
+            // Rename language-* classes to lang-* to prevent Prism.js re-highlighting
+            $output = $output->transformer(new PrismDefenseTransformer());
+
+            // Add 'no-highlight' class as additional defense
             $output = $output->decoration(
                 PreDecoration::make()->class('no-highlight')
             );
