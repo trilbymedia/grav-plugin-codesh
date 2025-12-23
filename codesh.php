@@ -6,6 +6,7 @@ use Composer\Autoload\ClassLoader;
 use Grav\Common\Plugin;
 use Grav\Common\Utils;
 use Grav\Plugin\Codesh\GrammarManager;
+use Grav\Plugin\Codesh\PrismDefenseTransformer;
 use Grav\Plugin\Codesh\ThemeManager;
 use Phiki\Phiki;
 use Phiki\Transformers\Decorations\PreDecoration;
@@ -27,6 +28,13 @@ class CodeshPlugin extends Plugin
             'onPluginsInitialized' => [
                 ['autoload', 100001],
                 ['onPluginsInitialized', 0]
+            ],
+            // Editor Pro integration events
+            'registerEditorProPlugin' => [
+                ['registerEditorProPlugin', 0],
+            ],
+            'onEditorProShortcodeRegister' => [
+                ['onEditorProShortcodeRegister', 0],
             ]
         ];
     }
@@ -677,6 +685,139 @@ class CodeshPlugin extends Plugin
     }
 
     /**
+     * Register Editor Pro plugin assets
+     */
+    public function registerEditorProPlugin(Event $event): Event
+    {
+        $plugins = $event['plugins'];
+
+        // Add Codesh Editor Pro integration CSS
+        $plugins['css'][] = 'plugin://codesh/editor-pro/codesh-integration.css';
+
+        $event['plugins'] = $plugins;
+        return $event;
+    }
+
+    /**
+     * Register Codesh shortcodes for Editor Pro
+     */
+    public function onEditorProShortcodeRegister(Event $event): Event
+    {
+        $shortcodes = $event['shortcodes'];
+
+        // Codesh shortcodes
+        $codeshShortcodes = [
+            // Codesh - syntax highlighted code block
+            [
+                'name' => 'codesh',
+                'title' => 'Codesh',
+                'description' => 'Server-side syntax highlighted code block with 200+ languages',
+                'type' => 'block',
+                'plugin' => 'codesh',
+                'category' => 'code',
+                'group' => 'Codesh',
+                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
+                'bbcodeAttribute' => 'lang',  // BBCode value [codesh=xxx] maps to this attribute
+                'attributes' => [
+                    'lang' => [
+                        'type' => 'text',
+                        'title' => 'Language',
+                        'default' => 'javascript',
+                        'required' => true,
+                        'placeholder' => 'e.g., javascript, php, python'
+                    ],
+                    'title' => [
+                        'type' => 'text',
+                        'title' => 'Title/Filename',
+                        'default' => '',
+                        'placeholder' => 'e.g., example.js'
+                    ],
+                    'line-numbers' => [
+                        'type' => 'checkbox',
+                        'title' => 'Show Line Numbers',
+                        'default' => false
+                    ],
+                    'start' => [
+                        'type' => 'number',
+                        'title' => 'Starting Line',
+                        'placeholder' => '1',
+                        'min' => 1
+                    ],
+                    'highlight' => [
+                        'type' => 'text',
+                        'title' => 'Highlight Lines',
+                        'default' => '',
+                        'placeholder' => 'e.g., 1,3-5,8'
+                    ],
+                    'focus' => [
+                        'type' => 'text',
+                        'title' => 'Focus Lines',
+                        'default' => '',
+                        'placeholder' => 'e.g., 2-4'
+                    ],
+                    'theme' => [
+                        'type' => 'text',
+                        'title' => 'Theme Override',
+                        'default' => '',
+                        'placeholder' => 'e.g., dracula, nord'
+                    ],
+                    'hide-header' => [
+                        'type' => 'checkbox',
+                        'title' => 'Hide Header',
+                        'default' => false
+                    ],
+                    'hide-lang' => [
+                        'type' => 'checkbox',
+                        'title' => 'Hide Language',
+                        'default' => false
+                    ],
+                    'diff' => [
+                        'type' => 'checkbox',
+                        'title' => 'Diff Mode',
+                        'default' => false
+                    ]
+                ],
+                'titleBarAttributes' => ['title', 'lang', 'theme', 'highlight', 'focus', 'line-numbers', 'diff', 'hide-header', 'hide-lang'],
+                'hasContent' => true,
+                'contentType' => 'code', // Treat content as raw code (uses CodeMirror editor)
+                'language' => 'javascript', // Default language for CodeMirror
+                'defaultContent' => 'console.log("Hello, World!");'
+            ],
+            // Codesh Group - tabbed code blocks
+            [
+                'name' => 'codesh-group',
+                'title' => 'Codesh Group',
+                'description' => 'Tabbed interface for multiple code examples with optional sync',
+                'type' => 'block',
+                'plugin' => 'codesh',
+                'category' => 'code',
+                'group' => 'Codesh',
+                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>',
+                'attributes' => [
+                    'sync' => [
+                        'type' => 'text',
+                        'title' => 'Sync Key',
+                        'default' => '',
+                        'placeholder' => 'e.g., lang (syncs tabs across groups)'
+                    ]
+                ],
+                'titleBarAttributes' => ['sync'],
+                'hasContent' => true,
+                'allowedChildren' => ['codesh'], // Nested codesh blocks allowed
+                'defaultContent' => '[codesh lang="javascript" title="JavaScript"]\nconsole.log("Hello!");\n[/codesh]\n[codesh lang="python" title="Python"]\nprint("Hello!")\n[/codesh]'
+            ]
+        ];
+
+        // Add all Codesh shortcodes to the registry
+        foreach ($codeshShortcodes as $shortcode) {
+            $shortcodes[] = $shortcode;
+        }
+
+        $event['shortcodes'] = $shortcodes;
+        return $event;
+    }
+
+    /**
      * Add Twig filter (must be done before Twig extensions are frozen)
      */
     public function onTwigInitialized(): void
@@ -703,7 +844,7 @@ class CodeshPlugin extends Plugin
      *
      * @param string $content The code to highlight
      * @param string $lang The language (default: 'txt')
-     * @param array $options Options: theme, line-numbers, start, highlight, focus, class, show-lang, title, header
+     * @param array $options Options: theme, line-numbers, start, highlight, focus, class, hide-lang, title, hide-header
      * @return string The highlighted HTML
      */
     public function codeshFilter(string $content, string $lang = 'txt', array $options = []): string
@@ -715,9 +856,9 @@ class CodeshPlugin extends Plugin
             'highlight' => $options['highlight'] ?? '',
             'focus' => $options['focus'] ?? '',
             'class' => $options['class'] ?? '',
-            'show-lang' => $options['show-lang'] ?? true,
+            'hide-lang' => $options['hide-lang'] ?? false,
             'title' => $options['title'] ?? '',
-            'header' => $options['header'] ?? true,
+            'hide-header' => $options['hide-header'] ?? false,
         ], $options);
 
         // Generate cache key based on content, language, options, and theme
@@ -773,9 +914,9 @@ class CodeshPlugin extends Plugin
         $highlight = $options['highlight'] ?? '';
         $focus = $options['focus'] ?? '';
         $class = $options['class'] ?? '';
-        $showLang = $this->toBool($options['show-lang'] ?? true);
+        $showLang = !$this->toBool($options['hide-lang'] ?? false);
         $title = $options['title'] ?? '';
-        $showHeader = $this->toBool($options['header'] ?? true);
+        $showHeader = !$this->toBool($options['hide-header'] ?? false);
 
         // Clean up the content
         $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -789,7 +930,10 @@ class CodeshPlugin extends Plugin
             $phiki = $this->getPhiki();
             $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
 
-            // Add 'no-highlight' class to prevent Prism.js from reprocessing
+            // Rename language-* classes to lang-* to prevent Prism.js re-highlighting
+            $output = $output->transformer(new PrismDefenseTransformer());
+
+            // Add 'no-highlight' class as additional defense
             $output = $output->decoration(
                 PreDecoration::make()->class('no-highlight')
             );

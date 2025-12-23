@@ -2,6 +2,7 @@
 
 namespace Grav\Plugin\Shortcodes;
 
+use Grav\Plugin\Codesh\PrismDefenseTransformer;
 use Phiki\Phiki;
 use Phiki\Transformers\Decorations\LineDecoration;
 use Phiki\Transformers\Decorations\PreDecoration;
@@ -199,7 +200,10 @@ class CodeshShortcode extends Shortcode
 
             $output = $phiki->codeToHtml($content, strtolower($lang), $theme);
 
-            // Add 'no-highlight' class to prevent Prism.js from reprocessing
+            // Rename language-* classes to lang-* to prevent Prism.js re-highlighting
+            $output = $output->transformer(new PrismDefenseTransformer());
+
+            // Add 'no-highlight' class as additional defense
             $output = $output->decoration(
                 PreDecoration::make()->class('no-highlight')
             );

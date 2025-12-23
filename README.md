@@ -150,7 +150,7 @@ class UserController extends AbstractController
 Hide the language badge while keeping the header:
 
 ```markdown
-[codesh lang="bash" show-lang="false"]
+[codesh lang="bash" hide-lang="true"]
 npm install
 npm run build
 [/codesh]
@@ -161,7 +161,7 @@ npm run build
 Hide the entire header for a super minimal look:
 
 ```markdown
-[codesh lang="javascript" header="false"]
+[codesh lang="javascript" hide-header="true"]
 const minimal = true;
 [/codesh]
 ```
@@ -364,8 +364,8 @@ Language aliases are supported (e.g., `js` for `javascript`, `py` for `python`, 
 | `highlight` / `hl` | Lines to highlight | `highlight="1,3-5"` |
 | `focus` | Lines to focus | `focus="2-4"` |
 | `title` | Filename or title in header | `title="config.yaml"` |
-| `show-lang` | Show/hide language badge | `show-lang="false"` |
-| `header` | Show/hide entire header bar | `header="false"` |
+| `hide-lang` | Hide the language badge | `hide-lang="true"` |
+| `hide-header` | Hide the header bar | `hide-header="true"` |
 | `class` | Additional CSS class | `class="my-class"` |
 
 ## CSS Customization

@@ -1,0 +1,144 @@
+/**
+ * Codesh Plugin - Editor Pro Integration Styles
+ * Provides styled previews for Codesh shortcodes in the Editor Pro WYSIWYG editor
+ */
+
+/* ========================================
+   Codesh Shortcode Block Wrapper
+   ======================================== */
+
+/* Override default green border with dark grey/black */
+.shortcode-block-wrapper.shortcode-codesh,
+.shortcode-block-wrapper.shortcode-codesh-group {
+    border: 2px solid #3d3d3d;
+    border-radius: 6px;
+    background: #1f2937;
+}
+
+/* Remove blue left border for code type - use consistent dark border */
+.shortcode-block-wrapper.shortcode-codesh.shortcode-code-type {
+    border-left: 2px solid #3d3d3d !important;
+}
+
+/* ========================================
+   Header Styling
+   ======================================== */
+
+/* Dark header background */
+.shortcode-block-wrapper.shortcode-codesh .shortcode-block-header,
+.shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-header {
+    background: #282c34;
+    border-bottom: 1px solid #3d3d3d;
+}
+
+/* Override the default code-type title styling (yellow, uppercase, monospace) */
+.shortcode-block-wrapper.shortcode-codesh.shortcode-code-type .shortcode-block-title,
+.shortcode-block-wrapper.shortcode-codesh .shortcode-block-title,
+.shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-title {
+    color: #9ca3af !important;
+    text-transform: none !important;
+    font-weight: 500 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    letter-spacing: normal !important;
+}
+
+/* Control buttons */
+.shortcode-block-wrapper.shortcode-codesh .shortcode-block-controls button,
+.shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-controls button {
+    color: #9ca3af;
+}
+
+.shortcode-block-wrapper.shortcode-codesh .shortcode-block-controls button:hover,
+.shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-controls button:hover {
+    background: #3d3d3d;
+    color: #e5e7eb;
+}
+
+/* ========================================
+   Content Area
+   ======================================== */
+
+/* Code editor container */
+.shortcode-block-wrapper.shortcode-codesh .shortcode-code-editor,
+.shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-content {
+    background: #1f2937 !important;
+}
+
+/* Codesh Group container - ensure dark background */
+.shortcode-block-wrapper.shortcode-codesh-group {
+    background: #1f2937 !important;
+}
+
+/* Nested codesh blocks inside group */
+.shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-wrapper.shortcode-codesh {
+    margin: 0.5rem 0;
+}
+
+/* Code content styling */
+.shortcode-block-wrapper.shortcode-codesh pre,
+.shortcode-block-wrapper.shortcode-codesh code,
+.shortcode-block-wrapper.shortcode-codesh-group pre,
+.shortcode-block-wrapper.shortcode-codesh-group code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ========================================
+   Diff Highlighting in Editor
+   ======================================== */
+
+/* Diff line highlighting - applies to CodeMirror in editor */
+.shortcode-block-wrapper.shortcode-codesh .cm-line:has(.cm-string:first-child) {
+    /* Lines starting with + or - get highlighted */
+}
+
+/* Style for diff additions (lines starting with +) */
+.shortcode-block-wrapper.shortcode-codesh .cm-content .cm-line {
+    position: relative;
+}
+
+/* Basic diff styling - highlight + and - at start of lines */
+.shortcode-block-wrapper.shortcode-codesh .cm-editor .cm-content {
+    /* Diff lines are handled by the syntax highlighter */
+}
+
+/* ========================================
+   Dark Theme Adjustments
+   ======================================== */
+
+.dark-theme .shortcode-block-wrapper.shortcode-codesh,
+.dark-theme .shortcode-block-wrapper.shortcode-codesh-group {
+    border-color: #4b5563;
+}
+
+.dark-theme .shortcode-block-wrapper.shortcode-codesh .shortcode-block-header,
+.dark-theme .shortcode-block-wrapper.shortcode-codesh-group .shortcode-block-header {
+    background: #1f2937;
+    border-bottom-color: #4b5563;
+}
+
+/* ========================================
+   Legacy Preserved Block Support
+   ======================================== */
+
+/* For backwards compatibility with preserved blocks */
+.preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] {
+    border-color: #3d3d3d;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+}
+
+.preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] .shortcode-titlebar,
+.preserved-block[data-block-type="shortcode"][data-shortcode-plugin="codesh"] .preserved-block-header {
+    background: #282c34;
+    color: #9ca3af;
+}
+
+.preserved-block[data-shortcode-name="codesh"] .shortcode-content,
+.preserved-block[data-shortcode-name="codesh"] .preserved-block-content,
+.preserved-block[data-shortcode-name="codesh-group"] .shortcode-content,
+.preserved-block[data-shortcode-name="codesh-group"] .preserved-block-content {
+    background: #1f2937;
+    color: #e5e7eb;
+}
