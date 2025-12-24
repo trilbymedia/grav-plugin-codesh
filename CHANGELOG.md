@@ -1,3 +1,11 @@
+# v1.3.0
+## 12/23/2025
+
+1. [](#new)
+    * Added new `line_wrap` option (enabled by default)
+1. [](#improved)
+    * Dedent code when the whole shortcode is indented (ie in a markdown list)
+   
 # v1.2.0
 ## 12/23/2025
 
