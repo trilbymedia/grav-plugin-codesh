@@ -136,6 +136,7 @@ class CodeshShortcode extends Shortcode
                 'show-lang' => $sc->getParameter('show-lang', $sc->getParameter('showlang')),
                 'title' => $sc->getParameter('title', ''),
                 'header' => $sc->getParameter('header'),
+                'wrap' => $sc->getParameter('wrap'),
             ]
         );
     }
@@ -256,6 +257,16 @@ class CodeshShortcode extends Shortcode
             if (!$showHeader) {
                 $classes[] = 'no-header';
             }
+            // Handle wrap option - shortcode can override global setting
+            $wrapOption = $options['wrap'] ?? null;
+            if ($wrapOption === 'true' || $wrapOption === true) {
+                $classes[] = 'codesh-line-wrap';
+            } elseif ($wrapOption === 'false' || $wrapOption === false) {
+                // Explicitly disabled, don't add class
+            } elseif ($config['line_wrap'] ?? true) {
+                // Use global setting
+                $classes[] = 'codesh-line-wrap';
+            }
 
             // Build the complete HTML output
             $output = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
@@ -333,7 +344,53 @@ class CodeshShortcode extends Shortcode
         // Remove leading/trailing blank lines
         $content = trim($content, "\n\r");
 
+        // Dedent: remove common leading whitespace from all lines
+        $content = $this->dedent($content);
+
         return $content;
+    }
+
+    /**
+     * Remove common leading whitespace from all lines (dedent)
+     * This handles code inside indented markdown contexts like lists
+     */
+    protected function dedent(string $content): string
+    {
+        $lines = explode("\n", $content);
+
+        // Find minimum indentation (ignoring empty lines)
+        $minIndent = PHP_INT_MAX;
+        foreach ($lines as $line) {
+            // Skip empty or whitespace-only lines for indent calculation
+            if (trim($line) === '') {
+                continue;
+            }
+            // Count leading spaces/tabs
+            if (preg_match('/^(\s*)/', $line, $matches)) {
+                $indent = strlen($matches[1]);
+                if ($indent < $minIndent) {
+                    $minIndent = $indent;
+                }
+            }
+        }
+
+        // If no common indent found, return as-is
+        if ($minIndent === 0 || $minIndent === PHP_INT_MAX) {
+            return $content;
+        }
+
+        // Remove the common indent from each line
+        $dedentedLines = [];
+        foreach ($lines as $line) {
+            // Only remove indent from non-empty lines
+            if (trim($line) === '') {
+                $dedentedLines[] = '';
+            } else {
+                $dedentedLines[] = substr($line, $minIndent);
+            }
+        }
+
+        return implode("\n", $dedentedLines);
     }
 
     /**

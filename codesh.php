@@ -775,9 +775,19 @@ class CodeshPlugin extends Plugin
                         'type' => 'checkbox',
                         'title' => 'Diff Mode',
                         'default' => false
+                    ],
+                    'wrap' => [
+                        'type' => 'select',
+                        'title' => 'Line Wrapping',
+                        'default' => '',
+                        'options' => [
+                            '' => 'Use Global Setting',
+                            'true' => 'Enabled',
+                            'false' => 'Disabled'
+                        ]
                     ]
                 ],
-                'titleBarAttributes' => ['title', 'lang', 'theme', 'highlight', 'focus', 'line-numbers', 'diff', 'hide-header', 'hide-lang'],
+                'titleBarAttributes' => ['title', 'lang', 'theme', 'highlight', 'focus', 'line-numbers', 'diff', 'hide-header', 'hide-lang', 'wrap'],
                 'hasContent' => true,
                 'contentType' => 'code', // Treat content as raw code (uses CodeMirror editor)
                 'language' => 'javascript', // Default language for CodeMirror
@@ -921,6 +931,7 @@ class CodeshPlugin extends Plugin
         // Clean up the content
         $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $code = trim($code, "\n\r");
+        $code = $this->dedent($code);
 
         if (empty(trim($code))) {
             return '';
@@ -984,6 +995,16 @@ class CodeshPlugin extends Plugin
             }
             if (!$showHeader) {
                 $classes[] = 'no-header';
+            }
+            // Handle wrap option - shortcode can override global setting
+            $wrapOption = $options['wrap'] ?? null;
+            if ($wrapOption === 'true' || $wrapOption === true) {
+                $classes[] = 'codesh-line-wrap';
+            } elseif ($wrapOption === 'false' || $wrapOption === false) {
+                // Explicitly disabled, don't add class
+            } elseif ($config['line_wrap'] ?? true) {
+                // Use global setting
+                $classes[] = 'codesh-line-wrap';
             }
 
             // Build the complete HTML output
@@ -1071,6 +1092,49 @@ class CodeshPlugin extends Plugin
             return in_array(strtolower($value), ['true', '1', 'yes', 'on'], true);
         }
         return (bool) $value;
+    }
+
+    /**
+     * Remove common leading whitespace from all lines (dedent)
+     * This handles code inside indented markdown contexts like lists
+     */
+    protected function dedent(string $content): string
+    {
+        $lines = explode("\n", $content);
+
+        // Find minimum indentation (ignoring empty lines)
+        $minIndent = PHP_INT_MAX;
+        foreach ($lines as $line) {
+            // Skip empty or whitespace-only lines for indent calculation
+            if (trim($line) === '') {
+                continue;
+            }
+            // Count leading spaces/tabs
+            if (preg_match('/^(\s*)/', $line, $matches)) {
+                $indent = strlen($matches[1]);
+                if ($indent < $minIndent) {
+                    $minIndent = $indent;
+                }
+            }
+        }
+
+        // If no common indent found, return as-is
+        if ($minIndent === 0 || $minIndent === PHP_INT_MAX) {
+            return $content;
+        }
+
+        // Remove the common indent from each line
+        $dedentedLines = [];
+        foreach ($lines as $line) {
+            // Only remove indent from non-empty lines
+            if (trim($line) === '') {
+                $dedentedLines[] = '';
+            } else {
+                $dedentedLines[] = substr($line, $minIndent);
+            }
+        }
+
+        return implode("\n", $dedentedLines);
     }
 
     /**
@@ -1280,6 +1344,9 @@ class CodeshPlugin extends Plugin
             $classes = ['codesh-block'];
             if (is_array($theme)) {
                 $classes[] = 'codesh-dual-theme';
+            }
+            if ($config['line_wrap'] ?? true) {
+                $classes[] = 'codesh-line-wrap';
             }
 
             // Build the complete HTML output with header

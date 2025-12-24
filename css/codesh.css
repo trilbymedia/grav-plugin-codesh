@@ -459,3 +459,35 @@
 .codesh-group-panel pre::-webkit-scrollbar-thumb:hover {
     background: rgba(128, 128, 128, 0.5);
 }
+
+/* ===================================
+   LINE WRAPPING
+   =================================== */
+.codesh-line-wrap pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow-x: hidden;
+}
+
+.codesh-line-wrap .codesh-code {
+    overflow-x: hidden;
+}
+
+/* Line numbers with wrapping - use padding/margin technique */
+/* Only apply when line numbers are present */
+.codesh-line-wrap .line:has(.line-number) {
+    padding-left: 4em;
+}
+
+.codesh-line-wrap .line-number {
+    margin-left: -4em;
+}
+
+/* Group panels with line wrap */
+.codesh-group-panel.codesh-line-wrap pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow-x: hidden;
+}
