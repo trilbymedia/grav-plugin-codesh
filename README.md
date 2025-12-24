@@ -12,6 +12,7 @@ Server-side syntax highlighting for Grav CMS using [Phiki](https://phiki.dev), a
 - **Line numbers** - Optional line number gutter with custom starting line
 - **Line highlighting** - Highlight specific lines to draw attention
 - **Line focus** - Dim non-focused lines to emphasize important code
+- **Line wrapping** - Wrap long lines instead of horizontal scrolling
 - **Title/filename display** - Show filename or custom title in the header
 - **Minimal mode** - Hide header for clean, minimal appearance
 - **Code groups** - Tabbed interface for multiple code examples with sync support
@@ -166,6 +167,27 @@ const minimal = true;
 [/codesh]
 ```
 
+### Line Wrapping
+
+By default, line wrapping is enabled globally (configurable in plugin settings). Long lines will wrap to the next line instead of scrolling horizontally. Line numbers stay aligned with wrapped content.
+
+Override the global setting for a specific code block:
+
+```markdown
+[codesh lang="javascript" wrap="false"]
+// This block will scroll horizontally regardless of global setting
+const veryLongLine = "This line is very long and will scroll horizontally instead of wrapping to the next line";
+[/codesh]
+```
+
+Force wrapping on even if globally disabled:
+
+```markdown
+[codesh lang="javascript" wrap="true"]
+// This block will wrap regardless of global setting
+[/codesh]
+```
+
 ### Custom Theme Per Block
 
 Override the automatic theme for a specific code block:
@@ -246,6 +268,7 @@ active: true
 theme_dark: github-dark     # Theme for dark mode
 theme_light: github-light   # Theme for light mode
 show_line_numbers: false    # Default line numbers setting
+line_wrap: true             # Wrap long lines (default: true)
 process_markdown: true      # Auto-highlight markdown code blocks
 ```
 
@@ -366,6 +389,7 @@ Language aliases are supported (e.g., `js` for `javascript`, `py` for `python`, 
 | `title` | Filename or title in header | `title="config.yaml"` |
 | `hide-lang` | Hide the language badge | `hide-lang="true"` |
 | `hide-header` | Hide the header bar | `hide-header="true"` |
+| `wrap` | Override line wrapping | `wrap="false"` |
 | `class` | Additional CSS class | `class="my-class"` |
 
 ## CSS Customization
@@ -377,6 +401,7 @@ The plugin provides CSS classes for styling:
 - `.codesh-block.no-header` - Container without header
 - `.codesh-block.has-highlights` - Container with highlighted lines
 - `.codesh-block.has-focus` - Container with focused lines
+- `.codesh-block.codesh-line-wrap` - Container with line wrapping enabled
 - `.codesh-dual-theme` - Container using CSS variable theme switching
 
 ### Header Classes

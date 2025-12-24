@@ -9,5 +9,7 @@ PLUGIN_CODESH:
   LIGHT_THEME_HELP: Syntax highlighting theme for light mode
   SHOW_LINE_NUMBERS: Show Line Numbers (Default)
   SHOW_LINE_NUMBERS_HELP: Default setting for showing line numbers. Can be overridden per code block.
+  LINE_WRAP: Line Wrapping
+  LINE_WRAP_HELP: Wrap long lines instead of horizontal scrolling. Line numbers stay in sync with wrapped content.
   THEMES: Theme Gallery
   GRAMMARS: Grammars
