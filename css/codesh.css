@@ -389,8 +389,8 @@
     position: relative;
 }
 
-/* Individual panel */
-.codesh-group-panel {
+/* Individual panel - use higher specificity to override .codesh-block base styles */
+.codesh-group-panel.codesh-block {
     display: none;
     margin: 0;
     border-radius: 0;
@@ -398,7 +398,7 @@
     background: transparent;
 }
 
-.codesh-group-panel.active {
+.codesh-group-panel.codesh-block.active {
     display: block;
 }
 
