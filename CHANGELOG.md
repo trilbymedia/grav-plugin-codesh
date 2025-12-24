@@ -1,3 +1,9 @@
+# v1.2.0
+## 12/23/2025
+
+1. [](#improved)
+    * Support regular `codesh` styling and features while inside a `codesh-group` shortcode
+
 # v1.1.0
 ## 12/23/2025
 

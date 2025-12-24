@@ -109,12 +109,12 @@ class CodeshGroupShortcode extends Shortcode
         $output .= '<div class="codesh-group-panels">';
         foreach ($panels as $panel) {
             $activeClass = $panel['active'] ? ' active' : '';
-            // Modify the panel HTML to add the panel wrapper and remove outer div classes
+            // Modify the panel HTML to add the panel wrapper while preserving codesh-block class
             $panelHtml = $panel['html'];
-            // Replace the outer codesh-block div with our panel div
+            // Add codesh-group-panel class to the outer div while keeping codesh-block for styling
             $panelHtml = preg_replace(
-                '/<div class="codesh-block[^"]*"/',
-                '<div class="codesh-group-panel' . $activeClass . '" data-panel="' . $panel['id'] . '"',
+                '/<div class="codesh-block([^"]*)"/',
+                '<div class="codesh-group-panel codesh-block$1' . $activeClass . '" data-panel="' . $panel['id'] . '"',
                 $panelHtml,
                 1
             );
