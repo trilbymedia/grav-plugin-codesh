@@ -1165,10 +1165,8 @@ class CodeshPlugin extends Plugin
 
             // Register custom grammars from plugin's grammars directory
             $grammarsDir = __DIR__ . '/grammars';
-            $this->grav['log']->debug('CodeSh (main): Looking for grammars in ' . $grammarsDir . ' (exists: ' . (is_dir($grammarsDir) ? 'yes' : 'no') . ')');
             if (is_dir($grammarsDir)) {
                 $files = glob($grammarsDir . '/*.json');
-                $this->grav['log']->debug('CodeSh (main): Found ' . count($files) . ' grammar files');
                 foreach ($files as $grammarFile) {
                     $this->registerGrammarWithAliases($grammarFile);
                 }
@@ -1194,7 +1192,6 @@ class CodeshPlugin extends Plugin
     protected function registerGrammarWithAliases(string $grammarFile): void
     {
         $grammarSlug = basename($grammarFile, '.json');
-        $this->grav['log']->debug('CodeSh: Registering grammar "' . $grammarSlug . '" from ' . $grammarFile);
         $this->phiki->grammar($grammarSlug, $grammarFile);
 
         // Read grammar data for aliases and overrides
@@ -1209,7 +1206,6 @@ class CodeshPlugin extends Plugin
         // Can be specified as "overrides": ["markdown", "md"] in the grammar JSON
         if (isset($data['overrides']) && is_array($data['overrides'])) {
             foreach ($data['overrides'] as $override) {
-                $this->grav['log']->debug('CodeSh: Overriding grammar "' . $override . '" with ' . $grammarSlug);
                 $this->phiki->grammar($override, $grammarFile);
             }
         }
@@ -1222,7 +1218,6 @@ class CodeshPlugin extends Plugin
             foreach ($data['fileTypes'] as $alias) {
                 // Skip if alias is same as slug or is protected
                 if ($alias !== $grammarSlug && !in_array($alias, $protected)) {
-                    $this->grav['log']->debug('CodeSh: Registering grammar alias "' . $alias . '" for ' . $grammarSlug);
                     $this->phiki->grammar($alias, $grammarFile);
                 }
             }
@@ -1238,7 +1233,6 @@ class CodeshPlugin extends Plugin
 
         // Check if markdown processing is enabled
         if (!($config['process_markdown'] ?? true)) {
-            $this->grav['log']->debug('CodeSh: process_markdown is disabled, skipping');
             return;
         }
 
@@ -1246,13 +1240,11 @@ class CodeshPlugin extends Plugin
         $output = $this->grav->output;
 
         if (empty($output)) {
-            $this->grav['log']->debug('CodeSh: Output is empty, skipping');
             return;
         }
 
         // Count unprocessed code blocks
         $hasUnprocessedBlocks = preg_match_all('/<pre><code[^>]*>/', $output, $matches);
-        $this->grav['log']->debug('CodeSh: Found ' . $hasUnprocessedBlocks . ' potential code blocks in output');
 
         // Skip if no code blocks
         if ($hasUnprocessedBlocks === 0) {
@@ -1266,11 +1258,8 @@ class CodeshPlugin extends Plugin
         $output = preg_replace_callback(
             '/<pre><code class="language-([^"]+)">(.*?)<\/code><\/pre>/s',
             function ($matches) use ($config, &$replacementCount) {
-                $fullMatch = $matches[0];
                 $lang = $matches[1];
                 $code = $matches[2];
-
-                $this->grav['log']->debug('CodeSh: Processing code block with lang="' . $lang . '"');
 
                 // Decode HTML entities back to original code
                 $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -1287,8 +1276,6 @@ class CodeshPlugin extends Plugin
             function ($matches) use ($config, &$replacementCount) {
                 $code = $matches[1];
 
-                $this->grav['log']->debug('CodeSh: Processing code block without lang');
-
                 // Decode HTML entities back to original code
                 $code = html_entity_decode($code, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
@@ -1297,8 +1284,6 @@ class CodeshPlugin extends Plugin
             },
             $output
         );
-
-        $this->grav['log']->debug('CodeSh: Replaced ' . $replacementCount . ' code blocks');
 
         // Update the output
         $this->grav->output = $output;
@@ -1309,9 +1294,6 @@ class CodeshPlugin extends Plugin
      */
     protected function highlightCode(string $code, string $lang, array $config): string
     {
-        // Debug: Log the lang being requested
-        $this->grav['log']->debug('CodeSh (main): highlightCode() called with lang="' . $lang . '", content_len=' . strlen($code));
-
         // Detect theme mode from Helios theme config
         $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
