@@ -1,3 +1,9 @@
+# v2.0.1
+## 12/29/2025
+
+1. [](#bugfix)
+    * Fix a PSR-Cache compatibility issue
+
 # v2.0.0
 ## 12/24/2025
 
