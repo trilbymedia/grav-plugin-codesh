@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'getgrav/codesh',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '4592e339bc8486e8deff76cefc36459ab11bcf10',
+        'pretty_version' => 'dev-develop',
+        'version' => 'dev-develop',
+        'reference' => '7682a72c65e684f56dce6a0c6901cf16be7afe09',
         'type' => 'grav-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'getgrav/codesh' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '4592e339bc8486e8deff76cefc36459ab11bcf10',
+            'pretty_version' => 'dev-develop',
+            'version' => 'dev-develop',
+            'reference' => '7682a72c65e684f56dce6a0c6901cf16be7afe09',
             'type' => 'grav-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -56,9 +56,9 @@
             'dev_requirement' => false,
         ),
         'nette/utils' => array(
-            'pretty_version' => 'v4.1.0',
-            'version' => '4.1.0.0',
-            'reference' => 'fa1f0b8261ed150447979eb22e373b7b7ad5a8e0',
+            'pretty_version' => 'v4.1.1',
+            'version' => '4.1.1.0',
+            'reference' => 'c99059c0315591f1a0db7ad6002000288ab8dc72',
             'type' => 'library',
             'install_path' => __DIR__ . '/../nette/utils',
             'aliases' => array(),
@@ -83,13 +83,10 @@
             'dev_requirement' => false,
         ),
         'psr/simple-cache' => array(
-            'pretty_version' => '3.0.0',
-            'version' => '3.0.0.0',
-            'reference' => '764e0b3939f5ca87cb904f570ef9be2d78a07865',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../psr/simple-cache',
-            'aliases' => array(),
             'dev_requirement' => false,
+            'replaced' => array(
+                0 => '*',
+            ),
         ),
         'symfony/deprecation-contracts' => array(
             'pretty_version' => 'v3.6.0',

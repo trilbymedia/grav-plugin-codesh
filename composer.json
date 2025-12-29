@@ -7,6 +7,9 @@
         "php": ">=8.1",
         "phiki/phiki": "^2.0"
     },
+    "replace": {
+        "psr/simple-cache": "*"
+    },
     "autoload": {
         "psr-4": {
             "Grav\\Plugin\\": "",
