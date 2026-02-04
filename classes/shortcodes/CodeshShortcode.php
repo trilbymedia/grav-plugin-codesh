@@ -123,9 +123,13 @@ class CodeshShortcode extends Shortcode
      */
     protected function process(ShortcodeInterface $sc): string
     {
+        // Check for diff="true" parameter - forces language to 'diff'
+        $isDiff = $this->toBool($sc->getParameter('diff', false));
+        $lang = $isDiff ? 'diff' : $sc->getParameter('lang', $sc->getBbCode() ?? 'txt');
+
         return $this->highlight(
             $sc->getContent() ?? '',
-            $sc->getParameter('lang', $sc->getBbCode() ?? 'txt'),
+            $lang,
             [
                 'theme' => $sc->getParameter('theme'),
                 'line-numbers' => $sc->getParameter('line-numbers', $sc->getParameter('linenumbers')),
