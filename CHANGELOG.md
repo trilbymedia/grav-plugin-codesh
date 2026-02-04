@@ -1,3 +1,9 @@
+# v2.0.2
+## 02/03/2026
+
+1. [](#bugfix)
+    * Fixed `diff=true` syntax not working where bbcode style did
+
 # v2.0.1
 ## 12/29/2025
 
