@@ -204,6 +204,23 @@ class CodeshThemeField extends HTMLElement {
           line-height: 1; opacity: 0; transition: opacity 0.15s; }
         .ctm-card:hover .ctm-delete { opacity: 1; }
         .ctm-delete:hover { background: #ef4444; }
+
+        /* Dark mode — admin-next sets .dark on <html> */
+        .dark .ctm-modal { background: #1c1c1e; }
+        .dark .ctm-header { border-color: #2e2e30; }
+        .dark .ctm-header h3 { color: #e5e5e7; }
+        .dark .ctm-close { color: #8e8e93; }
+        .dark .ctm-close:hover { color: #e5e5e7; }
+        .dark .ctm-import { background: #2e2e30; border-color: #3a3a3c; color: #e5e5e7; }
+        .dark .ctm-import:hover { background: #3a3a3c; }
+        .dark .ctm-toolbar { border-color: #2e2e30; }
+        .dark .ctm-search { background: #2e2e30; border-color: #3a3a3c; color: #e5e5e7; }
+        .dark .ctm-search::placeholder { color: #8e8e93; }
+        .dark .ctm-filter { background: #2e2e30; border-color: #3a3a3c; color: #8e8e93; }
+        .dark .ctm-filter:hover { background: #3a3a3c; }
+        .dark .ctm-filter.active { background: #3b82f6; color: white; border-color: transparent; }
+        .dark .ctm-card-name { color: #e5e5e7; border-color: #2e2e30; background: #2a2a2c; }
+        .dark .ctm-empty { color: #8e8e93; }
       </style>
       <div class="ctm-modal">
         <div class="ctm-header">
