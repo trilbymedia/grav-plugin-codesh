@@ -5,6 +5,7 @@ namespace Grav\Plugin;
 use Composer\Autoload\ClassLoader;
 use Grav\Common\Plugin;
 use Grav\Common\Utils;
+use Grav\Plugin\Codesh\ApiController;
 use Grav\Plugin\Codesh\GrammarManager;
 use Grav\Plugin\Codesh\PrismDefenseTransformer;
 use Grav\Plugin\Codesh\ThemeManager;
@@ -29,6 +30,8 @@ class CodeshPlugin extends Plugin
                 ['autoload', 100001],
                 ['onPluginsInitialized', 0]
             ],
+            // API plugin integration — register custom endpoints
+            'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
             // Editor Pro integration events
             'registerEditorProPlugin' => [
                 ['registerEditorProPlugin', 0],
@@ -95,6 +98,20 @@ class CodeshPlugin extends Plugin
         return $this->grammarManager;
     }
 
+
+    /**
+     * Register API routes for admin-next web component fields.
+     */
+    public function onApiRegisterRoutes(Event $event): void
+    {
+        $routes = $event['routes'];
+        $routes->get('/codesh/themes', [ApiController::class, 'themes']);
+        $routes->post('/codesh/themes/import', [ApiController::class, 'importTheme']);
+        $routes->delete('/codesh/themes/{name}', [ApiController::class, 'deleteTheme']);
+        $routes->get('/codesh/grammars', [ApiController::class, 'grammars']);
+        $routes->post('/codesh/grammars/import', [ApiController::class, 'importGrammar']);
+        $routes->delete('/codesh/grammars/{slug}', [ApiController::class, 'deleteGrammar']);
+    }
 
     /**
      * Add admin template paths for custom form field types
