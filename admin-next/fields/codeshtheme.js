@@ -332,7 +332,13 @@ class CodeshThemeField extends HTMLElement {
   }
 
   async _deleteTheme(name) {
-    if (!confirm(`Delete custom theme "${name}"?`)) return;
+    const ok = await (window.__GRAV_DIALOGS?.confirm({
+        title: 'Delete custom theme?',
+        message: `The theme "${name}" will be permanently removed.`,
+        confirmLabel: 'Delete theme',
+        variant: 'destructive',
+    }) ?? Promise.resolve(window.confirm(`Delete custom theme "${name}"?`)));
+    if (!ok) return;
     const { token, env } = getAuth();
     const serverUrl = window.__GRAV_API_SERVER_URL || '';
     const apiPrefix = window.__GRAV_API_PREFIX || '/api/v1';
