@@ -1,3 +1,9 @@
+# v3.0.2
+## 04/17/2026
+
+1. [](improved)
+    * Fixed compatiblity
+
 # v3.0.1
 ## 04/17/2026
 
