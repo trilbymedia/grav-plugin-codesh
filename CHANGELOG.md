@@ -1,8 +1,14 @@
+# v3.0.1
+## 04/17/2026
+
+1. [](#improved)
+    * Use new confirmation-modal for Admin 2.0
+
 # v3.0.0
 ## 04/02/2026
 
 1. [](#new)
-    * Added 'Grav API' + Admin Pro support
+    * Added Grav 2.0 / Admin 2.0 support
 1. [](#bugfix)
     * Fixed long codeblocks pushing content with overflow-x: auto
     * Fixed dark mode support to theme picker modal
