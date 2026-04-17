@@ -14,7 +14,7 @@ bugs: https://github.com/trilbymedia/grav-plugin-codesh/issues
 docs: https://github.com/trilbymedia/grav-plugin-codesh/blob/main/README.md
 license: MIT
 compatibility:
-  grav: ['1.7', '1.8']
+  grav: ['1.7', '2.0']
 
 dependencies:
   - { name: grav, version: '>=1.7.0' }
