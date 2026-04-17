@@ -85,7 +85,13 @@ class CodeshGrammarListField extends HTMLElement {
   }
 
   async _deleteGrammar(slug) {
-    if (!confirm(`Delete custom grammar "${slug}"?`)) return;
+    const ok = await (window.__GRAV_DIALOGS?.confirm({
+        title: 'Delete custom grammar?',
+        message: `The grammar "${slug}" will be permanently removed.`,
+        confirmLabel: 'Delete grammar',
+        variant: 'destructive',
+    }) ?? Promise.resolve(window.confirm(`Delete custom grammar "${slug}"?`)));
+    if (!ok) return;
     const serverUrl = window.__GRAV_API_SERVER_URL || '';
     const apiPrefix = window.__GRAV_API_PREFIX || '/api/v1';
     try {
