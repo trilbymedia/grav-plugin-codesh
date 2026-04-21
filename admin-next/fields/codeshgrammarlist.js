@@ -7,19 +7,16 @@
 
 const TAG = window.__GRAV_FIELD_TAG;
 
-function getAuth() {
-  try {
-    const a = JSON.parse(localStorage.getItem('grav_admin_auth') || '{}');
-    return { token: a.accessToken || '', env: a.environment || '' };
-  } catch { return { token: '', env: '' }; }
-}
-
 function apiHeaders() {
-  const { token, env } = getAuth();
+  // Admin-next injects these globals via CustomFieldWrapper before executing
+  // our script — the localStorage key is site-scoped and not safely readable
+  // from here on sub-path installs. X-API-Token beats Authorization: Bearer
+  // because FPM/FastCGI strips Authorization before PHP sees it on many
+  // stacks (MAMP, some Apache configs).
   const h = {};
-  // X-API-Token, not Authorization: Bearer — FPM/FastCGI strips Authorization
-  // before PHP sees it on many stacks (MAMP, some Apache configs).
+  const token = window.__GRAV_API_TOKEN;
   if (token) h['X-API-Token'] = token;
+  const env = window.__GRAV_ENVIRONMENT;
   if (env) h['X-Grav-Environment'] = env;
   return h;
 }

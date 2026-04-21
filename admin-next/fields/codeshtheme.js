@@ -19,10 +19,13 @@ const SAMPLE_CODE = `class UserService {
 }`;
 
 function getAuth() {
-  try {
-    const a = JSON.parse(localStorage.getItem('grav_admin_auth') || '{}');
-    return { token: a.accessToken || '', env: a.environment || '' };
-  } catch { return { token: '', env: '' }; }
+  // Admin-next injects these globals via CustomFieldWrapper before executing
+  // our script — the localStorage key is site-scoped and not safely readable
+  // from here on sub-path installs.
+  return {
+    token: window.__GRAV_API_TOKEN || '',
+    env: window.__GRAV_ENVIRONMENT || '',
+  };
 }
 
 class CodeshThemeField extends HTMLElement {

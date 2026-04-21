@@ -1,3 +1,9 @@
+# v3.0.4
+## 04/21/2026
+
+1. [](#bugfix)
+    * Read the API token from `window.__GRAV_API_TOKEN` (injected by admin-next's CustomFieldWrapper) instead of reaching into `localStorage` directly — the stored key is site-scoped and was not resolvable from web components on sub-path installs, causing 401s on `/codesh/grammars` and `/codesh/themes`
+
 # v3.0.3
 ## 04/21/2026
 
