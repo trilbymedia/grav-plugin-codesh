@@ -1,3 +1,9 @@
+# v3.0.3
+## 04/21/2026
+
+1. [](#bugfix)
+    * Fixed 401 errors from admin-next field components on FPM/FastCGI stacks by switching to the `X-API-Token` header (some setups strip `Authorization: Bearer` before it reaches PHP)
+
 # v3.0.2
 ## 04/17/2026
 
