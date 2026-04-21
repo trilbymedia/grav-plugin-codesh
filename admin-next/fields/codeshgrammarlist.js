@@ -17,7 +17,9 @@ function getAuth() {
 function apiHeaders() {
   const { token, env } = getAuth();
   const h = {};
-  if (token) h['Authorization'] = `Bearer ${token}`;
+  // X-API-Token, not Authorization: Bearer — FPM/FastCGI strips Authorization
+  // before PHP sees it on many stacks (MAMP, some Apache configs).
+  if (token) h['X-API-Token'] = token;
   if (env) h['X-Grav-Environment'] = env;
   return h;
 }
