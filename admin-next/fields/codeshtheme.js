@@ -19,10 +19,13 @@ const SAMPLE_CODE = `class UserService {
 }`;
 
 function getAuth() {
-  try {
-    const a = JSON.parse(localStorage.getItem('grav_admin_auth') || '{}');
-    return { token: a.accessToken || '', env: a.environment || '' };
-  } catch { return { token: '', env: '' }; }
+  // Admin-next injects these globals via CustomFieldWrapper before executing
+  // our script — the localStorage key is site-scoped and not safely readable
+  // from here on sub-path installs.
+  return {
+    token: window.__GRAV_API_TOKEN || '',
+    env: window.__GRAV_ENVIRONMENT || '',
+  };
 }
 
 class CodeshThemeField extends HTMLElement {
@@ -98,7 +101,7 @@ class CodeshThemeField extends HTMLElement {
       const serverUrl = window.__GRAV_API_SERVER_URL || '';
       const apiPrefix = window.__GRAV_API_PREFIX || '/api/v1';
       const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (token) headers['X-API-Token'] = token;
       if (env) headers['X-Grav-Environment'] = env;
       const resp = await fetch(`${serverUrl}${apiPrefix}/codesh/themes`, { headers });
       const json = await resp.json();
@@ -343,7 +346,7 @@ class CodeshThemeField extends HTMLElement {
     const serverUrl = window.__GRAV_API_SERVER_URL || '';
     const apiPrefix = window.__GRAV_API_PREFIX || '/api/v1';
     const headers = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (token) headers['X-API-Token'] = token;
     if (env) headers['X-Grav-Environment'] = env;
     try {
       const resp = await fetch(`${serverUrl}${apiPrefix}/codesh/themes/${encodeURIComponent(name)}`, {
@@ -378,7 +381,7 @@ class CodeshThemeField extends HTMLElement {
       const serverUrl = window.__GRAV_API_SERVER_URL || '';
       const apiPrefix = window.__GRAV_API_PREFIX || '/api/v1';
       const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (token) headers['X-API-Token'] = token;
       if (env) headers['X-Grav-Environment'] = env;
       const form = new FormData();
       form.append('file', file);

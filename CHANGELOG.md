@@ -1,3 +1,15 @@
+# v3.0.4
+## 04/21/2026
+
+1. [](#bugfix)
+    * Read the API token from `window.__GRAV_API_TOKEN` (injected by admin-next's CustomFieldWrapper) instead of reaching into `localStorage` directly — the stored key is site-scoped and was not resolvable from web components on sub-path installs, causing 401s on `/codesh/grammars` and `/codesh/themes`
+
+# v3.0.3
+## 04/21/2026
+
+1. [](#bugfix)
+    * Fixed 401 errors from admin-next field components on FPM/FastCGI stacks by switching to the `X-API-Token` header (some setups strip `Authorization: Bearer` before it reaches PHP)
+
 # v3.0.2
 ## 04/17/2026
 
