@@ -203,7 +203,7 @@ class CodeshShortcode extends Shortcode
             // Get Phiki instance with custom themes registered
             $phiki = $this->getPhiki();
 
-            $output = $phiki->codeToHtml($content, strtolower($lang), $theme);
+            $output = $phiki->codeToHtml($content, strtolower((string) $lang), $theme);
 
             // Rename language-* classes to lang-* to prevent Prism.js re-highlighting
             $output = $output->transformer(new PrismDefenseTransformer());
@@ -250,7 +250,7 @@ class CodeshShortcode extends Shortcode
                 $classes[] = 'codesh-dual-theme';
             }
             if (!empty($class)) {
-                $classes[] = htmlspecialchars($class);
+                $classes[] = htmlspecialchars((string) $class);
             }
             if (!empty($highlight)) {
                 $classes[] = 'has-highlights';
@@ -273,7 +273,7 @@ class CodeshShortcode extends Shortcode
             }
 
             // Build the complete HTML output
-            $output = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
+            $output = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars((string) $lang) . '">';
 
             // Add header with language/title and copy button
             if ($showHeader) {
@@ -281,9 +281,9 @@ class CodeshShortcode extends Shortcode
 
                 // Display title or language
                 if (!empty($title)) {
-                    $output .= '<span class="codesh-title">' . htmlspecialchars($title) . '</span>';
+                    $output .= '<span class="codesh-title">' . htmlspecialchars((string) $title) . '</span>';
                 } elseif ($showLang && !empty($lang)) {
-                    $output .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
+                    $output .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper((string) $lang)) . '</span>';
                 } else {
                     $output .= '<span></span>';
                 }

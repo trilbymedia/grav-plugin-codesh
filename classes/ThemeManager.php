@@ -329,19 +329,19 @@ class UserRepository:
             if (!$color) continue;
 
             foreach ($scopes as $scope) {
-                if (strpos($scope, 'keyword') !== false && $keyword === $foreground) {
+                if (strpos((string) $scope, 'keyword') !== false && $keyword === $foreground) {
                     $keyword = $color;
                 }
-                if (strpos($scope, 'string') !== false && $string === $foreground) {
+                if (strpos((string) $scope, 'string') !== false && $string === $foreground) {
                     $string = $color;
                 }
-                if (strpos($scope, 'comment') !== false && $comment === $foreground) {
+                if (strpos((string) $scope, 'comment') !== false && $comment === $foreground) {
                     $comment = $color;
                 }
-                if ((strpos($scope, 'function') !== false || strpos($scope, 'entity.name.function') !== false) && $function === $foreground) {
+                if ((strpos((string) $scope, 'function') !== false || strpos((string) $scope, 'entity.name.function') !== false) && $function === $foreground) {
                     $function = $color;
                 }
-                if ((strpos($scope, 'entity.name.type') !== false || strpos($scope, 'support.class') !== false) && $type === $foreground) {
+                if ((strpos((string) $scope, 'entity.name.type') !== false || strpos((string) $scope, 'support.class') !== false) && $type === $foreground) {
                     $type = $color;
                 }
             }
@@ -532,7 +532,7 @@ class UserRepository:
             $ruleScopes = (array)($rule['scope'] ?? []);
             foreach ($targetScopes as $target) {
                 foreach ($ruleScopes as $scope) {
-                    if ($scope === $target || strpos($scope, $target) === 0) {
+                    if ($scope === $target || strpos((string) $scope, (string) $target) === 0) {
                         return $rule['settings']['foreground'] ?? null;
                     }
                 }
@@ -1007,7 +1007,7 @@ class UserRepository:
 
         // Type is optional - we'll try to detect it if missing
         // Valid types: light, dark, hc (high contrast), hcLight
-        if (isset($data['type']) && !in_array(strtolower($data['type']), ['light', 'dark', 'hc', 'hclight', 'hc-light'])) {
+        if (isset($data['type']) && !in_array(strtolower((string) $data['type']), ['light', 'dark', 'hc', 'hclight', 'hc-light'])) {
             $errors[] = 'Type must be "light", "dark", or "hc"';
         }
 
@@ -1075,7 +1075,7 @@ class UserRepository:
     {
         // If type is already set, normalize it
         if (isset($data['type'])) {
-            $type = strtolower($data['type']);
+            $type = strtolower((string) $data['type']);
             if (in_array($type, ['dark', 'hc'])) {
                 return 'dark';
             }
@@ -1141,7 +1141,7 @@ class UserRepository:
 
         // Determine name
         $name = $newName ?? ($data['name'] ?? basename($jsonPath, '.json'));
-        $name = preg_replace('/[^a-z0-9-_]/i', '-', strtolower($name));
+        $name = preg_replace('/[^a-z0-9-_]/i', '-', strtolower((string) $name));
 
         // Handle conflicts
         $finalName = $name;
@@ -1195,7 +1195,7 @@ class UserRepository:
             $output = $phiki->codeToHtml($code, $language, $themeName);
             return $output->toString();
         } catch (\Exception $e) {
-            return '<pre><code>' . htmlspecialchars($code) . '</code></pre>';
+            return '<pre><code>' . htmlspecialchars((string) $code) . '</code></pre>';
         }
     }
 
@@ -1222,7 +1222,7 @@ class UserRepository:
 
             return $html;
         } catch (\Exception $e) {
-            return '<pre><code>' . htmlspecialchars($code) . '</code></pre>';
+            return '<pre><code>' . htmlspecialchars((string) $code) . '</code></pre>';
         }
     }
 

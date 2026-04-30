@@ -178,14 +178,14 @@ class CodeshPlugin extends Plugin
             $uri = $this->grav['uri'];
             $path = $uri->path();
 
-            if (strpos($path, 'codesh-themes') !== false) {
+            if (strpos((string) $path, 'codesh-themes') !== false) {
                 // Clean output buffers and handle AJAX
                 while (ob_get_level()) {
                     ob_end_clean();
                 }
 
                 // Check if this is a grammar request (under codesh-themes/grammars/*)
-                if (strpos($path, 'codesh-themes/grammars') !== false) {
+                if (strpos((string) $path, 'codesh-themes/grammars') !== false) {
                     $this->handleGrammarApiRoutes();
                 } else {
                     $this->handleThemeEditorRoutes();
@@ -209,7 +209,7 @@ class CodeshPlugin extends Plugin
         $param = null;
 
         // Extract action from path like /grav-helios/admin/codesh-themes/list
-        if (preg_match('/codesh-themes\/([^\/\?]+)(?:\/([^\/\?]+))?/', $path, $matches)) {
+        if (preg_match('/codesh-themes\/([^\/\?]+)(?:\/([^\/\?]+))?/', (string) $path, $matches)) {
             $action = $matches[1] ?? 'list';
             $param = $matches[2] ?? null;
         }
@@ -289,7 +289,7 @@ class CodeshPlugin extends Plugin
 
         // Validate colors
         foreach ($colors as $key => $value) {
-            if (!preg_match('/^#[0-9A-Fa-f]{6}$/i', $value)) {
+            if (!preg_match('/^#[0-9A-Fa-f]{6}$/i', (string) $value)) {
                 echo json_encode(['error' => 'Invalid color format: ' . $key]);
                 return;
             }
@@ -322,7 +322,7 @@ class CodeshPlugin extends Plugin
         $displayName = $input['displayName'] ?? null;
 
         // Validate name
-        if (!preg_match('/^[a-z0-9-_]+$/i', $name)) {
+        if (!preg_match('/^[a-z0-9-_]+$/i', (string) $name)) {
             echo json_encode(['error' => 'Invalid theme name']);
             return;
         }
@@ -391,7 +391,7 @@ class CodeshPlugin extends Plugin
         $file = $_FILES['theme_file'];
 
         // Validate file type
-        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
         if ($extension !== 'json') {
             echo json_encode(['error' => 'Only JSON files are allowed']);
             return;
@@ -517,7 +517,7 @@ class CodeshPlugin extends Plugin
         $param = null;
 
         // Extract action from path like /grav-helios/admin/codesh-themes/grammars/list
-        if (preg_match('/codesh-themes\/grammars\/([^\/\?]+)(?:\/([^\/\?]+))?/', $path, $matches)) {
+        if (preg_match('/codesh-themes\/grammars\/([^\/\?]+)(?:\/([^\/\?]+))?/', (string) $path, $matches)) {
             $action = $matches[1] ?? 'list';
             $param = $matches[2] ?? null;
         }
@@ -613,7 +613,7 @@ class CodeshPlugin extends Plugin
         $file = $_FILES['grammar_file'];
 
         // Validate file type
-        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
         if ($extension !== 'json') {
             http_response_code(400);
             echo json_encode(['error' => 'Only JSON files are allowed']);
@@ -1002,7 +1002,7 @@ class CodeshPlugin extends Plugin
                 $classes[] = 'codesh-dual-theme';
             }
             if (!empty($class)) {
-                $classes[] = htmlspecialchars($class);
+                $classes[] = htmlspecialchars((string) $class);
             }
             if (!empty($highlight)) {
                 $classes[] = 'has-highlights';
@@ -1033,7 +1033,7 @@ class CodeshPlugin extends Plugin
 
                 // Display title or language
                 if (!empty($title)) {
-                    $result .= '<span class="codesh-title">' . htmlspecialchars($title) . '</span>';
+                    $result .= '<span class="codesh-title">' . htmlspecialchars((string) $title) . '</span>';
                 } elseif ($showLang && !empty($lang)) {
                     $result .= '<span class="codesh-lang">' . htmlspecialchars(strtoupper($lang)) . '</span>';
                 } else {
