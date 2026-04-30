@@ -66,7 +66,7 @@ class GrammarManager
         }
 
         // Sort by name
-        usort($grammars, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+        usort($grammars, fn($a, $b) => strcasecmp((string) $a['name'], (string) $b['name']));
 
         return $grammars;
     }
@@ -97,7 +97,7 @@ class GrammarManager
         }
 
         // Sort by name
-        usort($grammars, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+        usort($grammars, fn($a, $b) => strcasecmp((string) $a['name'], (string) $b['name']));
 
         return $grammars;
     }
@@ -128,7 +128,7 @@ class GrammarManager
         }
 
         // Sort by name
-        usort($grammars, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+        usort($grammars, fn($a, $b) => strcasecmp((string) $a['name'], (string) $b['name']));
 
         return $grammars;
     }
@@ -270,8 +270,8 @@ class GrammarManager
 
         // Generate slug from name or scopeName
         $name = $data['name'] ?? $data['scopeName'];
-        $slug = preg_replace('/[^a-z0-9-_]/i', '-', strtolower($name));
-        $slug = preg_replace('/-+/', '-', trim($slug, '-'));
+        $slug = preg_replace('/[^a-z0-9-_]/i', '-', strtolower((string) $name));
+        $slug = preg_replace('/-+/', '-', trim((string) $slug, '-'));
 
         // Handle name conflicts
         $finalSlug = $slug;

@@ -42,7 +42,7 @@ class CodeshGroupShortcode extends Shortcode
             $lang = $block->getAttribute('data-language') ?: 'txt';
 
             // Extract title from the block if present
-            $title = strtoupper($lang); // Default to language
+            $title = strtoupper((string) $lang); // Default to language
             $titleEl = $xpath->query(".//span[contains(@class, 'codesh-title')]", $block)->item(0);
             $langEl = $xpath->query(".//span[contains(@class, 'codesh-lang')]", $block)->item(0);
 
@@ -89,7 +89,7 @@ class CodeshGroupShortcode extends Shortcode
             $activeClass = $tab['active'] ? ' active' : '';
             $output .= '<button class="codesh-group-tab' . $activeClass . '" ';
             $output .= 'data-tab="' . $tab['id'] . '" ';
-            $output .= 'data-lang="' . htmlspecialchars($tab['lang']) . '">';
+            $output .= 'data-lang="' . htmlspecialchars((string) $tab['lang']) . '">';
             $output .= htmlspecialchars($tab['title']);
             $output .= '</button>';
         }

@@ -30,7 +30,7 @@ class PrismDefenseTransformer extends AbstractTransformer
             $newClasses = [];
             foreach ($classList->all() as $class) {
                 // Remove language-* and lang-* classes that Prism targets
-                if (!str_starts_with($class, 'language-') && !str_starts_with($class, 'lang-')) {
+                if (!str_starts_with((string) $class, 'language-') && !str_starts_with((string) $class, 'lang-')) {
                     $newClasses[] = $class;
                 }
             }
@@ -55,7 +55,7 @@ class PrismDefenseTransformer extends AbstractTransformer
 
                 // Remove language-* and lang-* classes
                 $classes = preg_replace('/\b(language|lang)-\S+\s*/', '', $classes);
-                $classes = trim(preg_replace('/\s+/', ' ', $classes));
+                $classes = trim((string) preg_replace('/\s+/', ' ', $classes));
 
                 return '<pre ' . $beforeClass . 'class="' . $classes . '"';
             },
