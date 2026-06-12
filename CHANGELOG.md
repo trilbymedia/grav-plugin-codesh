@@ -1,3 +1,10 @@
+# v3.0.6
+## 06/11/2026
+
+1. [](#improved)
+    * Markdown code blocks now cache their highlighted output, making code-heavy pages render up to ten times faster
+    * Copy buttons and tab groups keep working after in-page navigation on sites using htmx
+
 # v3.0.5
 ## 04/30/2026
 

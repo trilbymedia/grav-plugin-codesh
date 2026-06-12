@@ -146,40 +146,32 @@
     }
 
     /**
-     * Initialize copy buttons
-     */
-    function initCopyButtons() {
-        document.querySelectorAll('.codesh-copy').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                copyCode(this);
-            });
-        });
-    }
-
-    /**
-     * Initialize code groups
-     */
-    function initCodeGroups() {
-        document.querySelectorAll('.codesh-group').forEach(group => {
-            group.querySelectorAll('.codesh-group-tab').forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    switchTab(group, this);
-                });
-            });
-        });
-
-        // Restore stored preferences
-        restoreStoredTabs();
-    }
-
-    /**
-     * Initialize all functionality
+     * Initialize all functionality. Click handling is delegated from the
+     * document so code blocks injected after load — live updates, htmx
+     * swaps, infinite scroll — work without rebinding.
      */
     function init() {
-        initCopyButtons();
-        initCodeGroups();
+        document.addEventListener('click', function(e) {
+            const copy = e.target.closest('.codesh-copy');
+            if (copy) {
+                e.preventDefault();
+                copyCode(copy);
+                return;
+            }
+            const tab = e.target.closest('.codesh-group-tab');
+            if (tab) {
+                const group = tab.closest('.codesh-group');
+                if (group) {
+                    e.preventDefault();
+                    switchTab(group, tab);
+                }
+            }
+        });
+
+        restoreStoredTabs();
+
+        // Newly swapped-in groups should honor the stored tab preferences.
+        document.addEventListener('htmx:afterSettle', restoreStoredTabs);
     }
 
     // Initialize when DOM is ready

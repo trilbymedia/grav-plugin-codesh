@@ -1314,6 +1314,16 @@ class CodeshPlugin extends Plugin
         // Detect theme mode from Helios theme config
         $themeConfig = $this->config->get('themes.helios.appearance.theme', 'system');
 
+        // Highlighting is pure-PHP grammar work — expensive — and markdown
+        // blocks re-run it on every request, so cache like the shortcode
+        // path does. Pages dense with code drop from ~300ms to a few ms.
+        $cacheKey = 'codesh_md_' . md5($code . $lang . $themeConfig . ($config['line_wrap'] ?? true ? '1' : '0'));
+        $cache = $this->grav['cache'];
+        $cached = $cache->fetch($cacheKey);
+        if ($cached !== false) {
+            return $cached;
+        }
+
         // Use custom helios themes by default (with diff backgrounds)
         $themeDark = $config['theme_dark'] ?? 'helios-dark';
         $themeLight = $config['theme_light'] ?? 'helios-light';
@@ -1371,6 +1381,8 @@ class CodeshPlugin extends Plugin
             // Add the code
             $result .= '<div class="codesh-code">' . $html . '</div>';
             $result .= '</div>';
+
+            $cache->save($cacheKey, $result, 86400);
 
             return $result;
 
