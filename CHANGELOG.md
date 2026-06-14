@@ -1,3 +1,10 @@
+# v3.0.6
+## 06/14/2026
+
+1. [](#improved)
+    * Markdown code blocks now cache their highlighted output, making code-heavy pages render up to ten times faster
+    * Copy buttons and tab groups keep working after in-page navigation on sites using htmx
+
 # v3.0.5
 ## 04/30/2026
 
@@ -62,7 +69,7 @@
     * Added new `line_wrap` option (enabled by default)
 1. [](#improved)
     * Dedent code when the whole shortcode is indented (ie in a markdown list)
-   
+
 # v1.2.0
 ## 12/23/2025
 
@@ -99,7 +106,7 @@
 1. [](#improved)
    * Fixed blueprints
    * Fixed copy button on code groups
-   * Fixed empty badge when `show-lang` is disabled 
+   * Fixed empty badge when `show-lang` is disabled
 
 # v1.0.0
 ## 12/14/2025
