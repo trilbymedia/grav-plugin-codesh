@@ -1,3 +1,9 @@
+# v3.0.7
+## 08/01/2026
+
+1. [](#bugfix)
+    * Fixed markdown code blocks using a language Phiki doesn't ship re-running the highlighter and writing a fresh error log line on every single request. The plain-text fallback is now cached the same way a successful render is, so each block reports once per cache lifetime instead of thousands of times.
+
 # v3.0.6
 ## 06/14/2026
 
