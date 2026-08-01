@@ -1389,8 +1389,21 @@ class CodeshPlugin extends Plugin
         } catch (\Exception $e) {
             // Log the error
             $this->grav['log']->error('CodeSh (main): Error highlighting lang="' . $lang . '": ' . $e->getMessage());
+
             // Fallback to original on error
-            return '<div class="codesh-block codesh-error no-header" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
+            $result = '<div class="codesh-block codesh-error no-header" data-error="' . htmlspecialchars($e->getMessage()) . '"><pre><code>' . htmlspecialchars($code) . '</code></pre></div>';
+
+            // Cache the fallback too, exactly as the shortcode path already
+            // does. Highlighting is deterministic: a block that failed once
+            // fails identically on every later request, so leaving the failure
+            // path uncached meant re-running the grammar lookup and re-logging
+            // on every single page view. A handful of blocks using a language
+            // Phiki doesn't ship (e.g. ```apacheconfig, where the grammar is
+            // named "apache") produced thousands of identical log lines that
+            // way. Now each distinct block reports once per cache lifetime.
+            $cache->save($cacheKey, $result, 86400);
+
+            return $result;
         }
     }
 }

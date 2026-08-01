@@ -1,3 +1,9 @@
+# v3.0.7
+## 08/01/2026
+
+1. [](#bugfix)
+    * Fixed code blocks written in an unsupported language filling the log with repeated errors on every page load.
+
 # v3.0.6
 ## 06/14/2026
 
