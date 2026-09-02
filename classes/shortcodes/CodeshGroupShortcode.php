@@ -43,13 +43,23 @@ class CodeshGroupShortcode extends Shortcode
 
             // Extract title from the block if present
             $title = strtoupper((string) $lang); // Default to language
-            $titleEl = $xpath->query(".//span[contains(@class, 'codesh-title')]", $block)->item(0);
-            $langEl = $xpath->query(".//span[contains(@class, 'codesh-lang')]", $block)->item(0);
 
-            if ($titleEl) {
-                $title = $titleEl->textContent;
-            } elseif ($langEl && !empty(trim($langEl->textContent))) {
-                $title = $langEl->textContent;
+            // Prefer block container metadata since it survives `hide-header`
+            // and doesn't depend on the header markup shape. Fallback to
+            // scraping for blocks rendered before `data-title` existed, which
+            // may still be in the page cache.
+            $dataTitle = $block->getAttribute('data-title');
+            if ($dataTitle !== '') {
+                $title = $dataTitle;
+            } else {
+                $titleEl = $xpath->query(".//span[contains(@class, 'codesh-title')]", $block)->item(0);
+                $langEl = $xpath->query(".//span[contains(@class, 'codesh-lang')]", $block)->item(0);
+
+                if ($titleEl) {
+                    $title = $titleEl->textContent;
+                } elseif ($langEl && !empty(trim($langEl->textContent))) {
+                    $title = $langEl->textContent;
+                }
             }
 
             // Remove the header from the block
