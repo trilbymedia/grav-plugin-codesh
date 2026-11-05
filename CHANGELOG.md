@@ -1,3 +1,9 @@
+# v3.0.8
+## 11/05/2026
+
+1. [](#improved)
+    * Code blocks in a language CodeSh doesn't know render as plain text with the usual header and copy button, without logging an error, and common names like `apacheconfig`, `html.twig`, `cli`, `env` and `php-template` now highlight with the matching language
+
 # v3.0.7
 ## 08/01/2026
 

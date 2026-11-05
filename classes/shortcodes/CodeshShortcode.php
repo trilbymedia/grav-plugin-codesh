@@ -2,6 +2,7 @@
 
 namespace Grav\Plugin\Shortcodes;
 
+use Grav\Plugin\Codesh\Highlighter;
 use Grav\Plugin\Codesh\PrismDefenseTransformer;
 use Phiki\Phiki;
 use Phiki\Transformers\Decorations\LineDecoration;
@@ -203,7 +204,7 @@ class CodeshShortcode extends Shortcode
             // Get Phiki instance with custom themes registered
             $phiki = $this->getPhiki();
 
-            $output = $phiki->codeToHtml($content, strtolower((string) $lang), $theme);
+            $output = Highlighter::codeToHtml($phiki, $content, (string) $lang, $theme);
 
             // Rename language-* classes to lang-* to prevent Prism.js re-highlighting
             $output = $output->transformer(new PrismDefenseTransformer());
