@@ -7,6 +7,7 @@ use Grav\Common\Plugin;
 use Grav\Common\Utils;
 use Grav\Plugin\Codesh\ApiController;
 use Grav\Plugin\Codesh\GrammarManager;
+use Grav\Plugin\Codesh\Highlighter;
 use Grav\Plugin\Codesh\PrismDefenseTransformer;
 use Grav\Plugin\Codesh\ThemeManager;
 use Phiki\Phiki;
@@ -956,7 +957,7 @@ class CodeshPlugin extends Plugin
 
         try {
             $phiki = $this->getPhiki();
-            $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
+            $output = Highlighter::codeToHtml($phiki, $code, $lang, $theme);
 
             // Rename language-* classes to lang-* to prevent Prism.js re-highlighting
             $output = $output->transformer(new PrismDefenseTransformer());
@@ -1342,7 +1343,7 @@ class CodeshPlugin extends Plugin
 
         try {
             $phiki = $this->getPhiki();
-            $output = $phiki->codeToHtml($code, strtolower($lang), $theme);
+            $output = Highlighter::codeToHtml($phiki, $code, $lang, $theme);
 
             // Add 'no-highlight' class to prevent Prism.js from reprocessing
             $output = $output->decoration(PreDecoration::make()->class('no-highlight'));
