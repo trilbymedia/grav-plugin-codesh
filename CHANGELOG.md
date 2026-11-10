@@ -1,3 +1,9 @@
+# v3.0.9
+## 11/10/2026
+
+1. [](#bugfix)
+    * Fixed CodeSh blanking non-HTML responses: a `<pre><code>` inside a JSON string (like a README in getgrav.org's `plugins.json`) never matched its escaped closing tag, the search ran to the end of the response and exhausted the PCRE backtrack limit, and the empty result replaced the whole body. Markdown code blocks are now only processed on HTML pages, and a failed match leaves the output as it was and logs a warning.
+
 # v3.0.8
 ## 11/05/2026
 

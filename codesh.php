@@ -1254,6 +1254,15 @@ class CodeshPlugin extends Plugin
             return;
         }
 
+        // Only HTML responses carry markdown code blocks. A JSON or XML response
+        // can contain `<pre><code>` inside escaped strings (e.g. a README in
+        // getgrav.org's plugins.json), where `</code></pre>` is written
+        // `<\/code><\/pre>` and never matches.
+        $page = $this->grav['page'] ?? null;
+        if ($page && $page->templateFormat() !== 'html') {
+            return;
+        }
+
         // Get the final HTML output
         $output = $this->grav->output;
 
@@ -1286,7 +1295,7 @@ class CodeshPlugin extends Plugin
                 return $this->highlightCode($code, $lang, $config);
             },
             $output
-        );
+        ) ?? $this->keepOutputOnRegexFailure($output);
 
         // Also process code blocks WITHOUT a language class: <pre><code>...</code></pre>
         $output = preg_replace_callback(
@@ -1301,10 +1310,23 @@ class CodeshPlugin extends Plugin
                 return $this->highlightCode($code, 'txt', $config);
             },
             $output
-        );
+        ) ?? $this->keepOutputOnRegexFailure($output);
 
         // Update the output
         $this->grav->output = $output;
+    }
+
+    /**
+     * A block with no closing tag sends the lazy match to the end of the
+     * document; on a large page that exhausts the PCRE backtrack limit and
+     * preg_replace_callback() returns null, which would blank the response.
+     * Log it and keep the output as it was.
+     */
+    private function keepOutputOnRegexFailure(string $output): string
+    {
+        $this->grav['log']->warning('CodeSh: skipped markdown code blocks: ' . preg_last_error_msg());
+
+        return $output;
     }
 
     /**
