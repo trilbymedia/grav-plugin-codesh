@@ -133,15 +133,31 @@ class CodeshShortcode extends Shortcode
             $lang,
             [
                 'theme' => $sc->getParameter('theme'),
-                'line-numbers' => $sc->getParameter('line-numbers', $sc->getParameter('linenumbers')),
+                'line-numbers' => $this->normalizeBoolAttr(
+                    $sc,
+                    ['no-line-numbers', 'nolinenumbers'],
+                    ['line-numbers', 'linenumbers']
+                ),
                 'start' => $sc->getParameter('start', $sc->getParameter('start-line')),
                 'highlight' => $sc->getParameter('highlight', $sc->getParameter('hl', '')),
                 'focus' => $sc->getParameter('focus', ''),
                 'class' => $sc->getParameter('class', ''),
-                'show-lang' => $sc->getParameter('show-lang', $sc->getParameter('showlang')),
+                'show-lang' => $this->normalizeBoolAttr(
+                    $sc,
+                    ['hide-lang', 'hidelang'],
+                    ['show-lang', 'showlang']
+                ),
                 'title' => $sc->getParameter('title', ''),
-                'header' => $sc->getParameter('header'),
-                'wrap' => $sc->getParameter('wrap'),
+                'header' => $this->normalizeBoolAttr(
+                    $sc,
+                    ['hide-header', 'hideheader'],
+                    ['header']
+                ),
+                'wrap' => $this->normalizeBoolAttr(
+                    $sc,
+                    ['nowrap', 'no-wrap'],
+                    ['wrap']
+                ),
             ]
         );
     }
@@ -181,14 +197,14 @@ class CodeshShortcode extends Shortcode
             $theme = ($themeConfig === 'dark') ? $themeDark : $themeLight;
         }
 
-        $lineNumbers = $this->toBool($options['line-numbers'] ?? $config['show_line_numbers'] ?? false);
+        $lineNumbers = $options['line-numbers'] ?? $this->toBool($config['show_line_numbers'] ?? false);
         $startLine = (int) ($options['start'] ?? 1);
         $highlight = $options['highlight'] ?? '';
         $focus = $options['focus'] ?? '';
         $class = $options['class'] ?? '';
-        $showLang = $this->toBool($options['show-lang'] ?? true);
+        $showLang = $options['show-lang'] ?? true;
         $title = $options['title'] ?? '';
-        $showHeader = $this->toBool($options['header'] ?? true);
+        $showHeader = $options['header'] ?? true;
 
         // Get code content - handle markdown fenced code blocks
         $content = $this->extractCodeFromMarkdown($content, $lang);
@@ -262,19 +278,16 @@ class CodeshShortcode extends Shortcode
             if (!$showHeader) {
                 $classes[] = 'no-header';
             }
-            // Handle wrap option - shortcode can override global setting
-            $wrapOption = $options['wrap'] ?? null;
-            if ($wrapOption === 'true' || $wrapOption === true) {
-                $classes[] = 'codesh-line-wrap';
-            } elseif ($wrapOption === 'false' || $wrapOption === false) {
-                // Explicitly disabled, don't add class
-            } elseif ($config['line_wrap'] ?? true) {
-                // Use global setting
+            // Shortcode attribute overrides the global setting when present.
+            if ($options['wrap'] ?? $this->toBool($config['line_wrap'] ?? true)) {
                 $classes[] = 'codesh-line-wrap';
             }
 
             // Build the complete HTML output
-            $output = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars((string) $lang) . '">';
+            $output = '<div class="' . implode(' ', $classes) . '"'
+                . ' data-language="' . htmlspecialchars((string) $lang) . '"'
+                . (!empty($title) ? ' data-title="' . htmlspecialchars((string) $title) . '"' : '')
+                . '>';
 
             // Add header with language/title and copy button
             if ($showHeader) {
@@ -432,6 +445,45 @@ class CodeshShortcode extends Shortcode
         }
 
         return array_unique($lines);
+    }
+
+    /**
+     * Normalize a boolean attribute written in negative form ("hide-header", "hide-lang")
+     * or in positive form ("header", "show-lang").
+     *
+     * The negative names are the documented API and what the Editor Pro integration emits,
+     * so they are checked first. The positive forms are kept as undocumented legacy aliases.
+     *
+     * Returns `null` when no listed attribute is present, so the caller's default still
+     * applies. A plain `false` would override the config-backed defaults used by `wrap` and
+     * `line-numbers`.
+     *
+     * @param ShortcodeInterface $sc
+     * @param string[] $negativeFormBoolAttribute Attribute names that equate to "off"
+     * @param string[] $positiveFormBoolAttribute Attribute names that equate to "on"
+     * @return bool|null
+     */
+    protected function normalizeBoolAttr(
+        ShortcodeInterface $sc,
+        array $negativeFormBoolAttribute,
+        array $positiveFormBoolAttribute = []
+    ): ?bool
+    {
+        foreach ($negativeFormBoolAttribute as $attribute) {
+            $value = $sc->getParameter($attribute);
+            if ($value !== null) {
+                return !$this->toBool($value);
+            }
+        }
+
+        foreach ($positiveFormBoolAttribute as $attribute) {
+            $value = $sc->getParameter($attribute);
+            if ($value !== null) {
+                return $this->toBool($value);
+            }
+        }
+
+        return null;
     }
 
     /**

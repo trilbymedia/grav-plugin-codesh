@@ -1014,19 +1014,16 @@ class CodeshPlugin extends Plugin
             if (!$showHeader) {
                 $classes[] = 'no-header';
             }
-            // Handle wrap option - shortcode can override global setting
-            $wrapOption = $options['wrap'] ?? null;
-            if ($wrapOption === 'true' || $wrapOption === true) {
-                $classes[] = 'codesh-line-wrap';
-            } elseif ($wrapOption === 'false' || $wrapOption === false) {
-                // Explicitly disabled, don't add class
-            } elseif ($config['line_wrap'] ?? true) {
-                // Use global setting
+            // Option overrides the global setting when present.
+            if ($this->toBool($options['wrap'] ?? ($config['line_wrap'] ?? true))) {
                 $classes[] = 'codesh-line-wrap';
             }
 
             // Build the complete HTML output
-            $result = '<div class="' . implode(' ', $classes) . '" data-language="' . htmlspecialchars($lang) . '">';
+            $result = '<div class="' . implode(' ', $classes) . '"'
+                . ' data-language="' . htmlspecialchars($lang) . '"'
+                . (!empty($title) ? ' data-title="' . htmlspecialchars((string) $title) . '"' : '')
+                . '>';
 
             // Add header with language/title and copy button
             if ($showHeader) {
